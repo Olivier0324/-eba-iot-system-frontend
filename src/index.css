@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* 
+     COLOR PALETTE: ECOSYSTEM ADAPTATION 
+     Converted from OKLCH to HSL
+  */
+
+  /* --- BRAND GREENS --- */
+  --color-eco-50: hsl(145, 33%, 96%);
+  --color-eco-100: hsl(145, 50%, 91%);
+  --color-eco-200: hsl(145, 55%, 84%);
+  --color-eco-300: hsl(145, 58%, 74%);
+  --color-eco-400: hsl(145, 60%, 62%);
+  --color-eco-500: hsl(145, 62%, 48%); /* Base Brand Green */
+  --color-eco-600: hsl(145, 61%, 40%);
+  --color-eco-700: hsl(145, 59%, 32%);
+  --color-eco-800: hsl(145, 56%, 26%);
+  --color-eco-900: hsl(145, 52%, 20%);
+  --color-eco-950: hsl(145, 48%, 15%);
+
+  /* --- BRAND BLUES --- */
+  --color-ocean-50: hsl(250, 33%, 96%);
+  --color-ocean-100: hsl(250, 50%, 91%);
+  --color-ocean-200: hsl(250, 55%, 84%);
+  --color-ocean-300: hsl(250, 58%, 74%);
+  --color-ocean-400: hsl(250, 60%, 62%);
+  --color-ocean-500: hsl(250, 62%, 48%); /* Base Brand Blue */
+  --color-ocean-600: hsl(250, 61%, 40%);
+  --color-ocean-700: hsl(250, 59%, 32%);
+  --color-ocean-800: hsl(250, 56%, 26%);
+  --color-ocean-900: hsl(250, 52%, 20%);
+  --color-ocean-950: hsl(250, 48%, 15%);
+
+  /* --- TEAL / ACCENT --- */
+  --color-teal-50: hsl(190, 33%, 96%);
+  --color-teal-100: hsl(190, 50%, 91%);
+  --color-teal-200: hsl(190, 55%, 84%);
+  --color-teal-300: hsl(190, 58%, 74%);
+  --color-teal-400: hsl(190, 60%, 62%);
+  --color-teal-500: hsl(190, 62%, 48%); /* Base Teal */
+  --color-teal-600: hsl(190, 61%, 40%);
+  --color-teal-700: hsl(190, 59%, 32%);
+  --color-teal-800: hsl(190, 56%, 26%);
+  --color-teal-900: hsl(190, 52%, 20%);
+  --color-teal-950: hsl(190, 48%, 15%);
+
+  /* --- SEMANTIC M&E COLORS --- */
+  --color-alert-50: hsl(25, 33%, 96%);
+  --color-alert-500: hsl(25, 62%, 48%);
+  --color-alert-700: hsl(25, 59%, 32%);
+
+  --color-warn-50: hsl(85, 33%, 96%);
+  --color-warn-500: hsl(85, 62%, 48%);
+  --color-warn-700: hsl(85, 59%, 32%);
+
+  /* --- FONT FAMILY --- */
+  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
