@@ -214,7 +214,7 @@ function Overview() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-eco-500 to-ocean-500 rounded-2xl p-6 text-white">
+      <div className="bg-linear-to-br from-eco-500 to-ocean-500 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3">
           <Eye className="h-8 w-8" />
           <div>
@@ -235,7 +235,7 @@ function Overview() {
           >
             <div className="flex items-center justify-between mb-3">
               <div
-                className={`p-2 rounded-xl bg-gradient-to-br ${stat.color} text-white`}
+                className={`p-2 rounded-xl bg-linear-to-br ${stat.color} text-white`}
               >
                 <stat.icon size={20} />
               </div>
