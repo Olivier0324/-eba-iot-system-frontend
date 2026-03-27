@@ -180,7 +180,7 @@ function Dashboard() {
           >
             <Menu size={24} />
           </button>
-          <span className="text-xl font-bold bg-gradient-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
             EBA OBSERVE
           </span>
         </div>
@@ -209,14 +209,14 @@ function Dashboard() {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-eco-500 to-ocean-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center">
                 <Eye className="w-4 h-4 text-white" />
               </div>
               <div>
                 <span className="text-lg font-bold text-gray-900 dark:text-white">
                   EBA
                 </span>
-                <span className="text-lg font-bold bg-gradient-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent">
+                <span className="text-lg font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
                   {" "}
                   OBSERVE
                 </span>
@@ -231,9 +231,9 @@ function Dashboard() {
           </div>
 
           {/* User Info */}
-          <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-eco-50 to-ocean-50 dark:from-eco-900/20 dark:to-ocean-900/20">
+          <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-linear-to-br from-eco-50 to-ocean-50 dark:from-eco-900/20 dark:to-ocean-900/20">
             <div className="flex items-center">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-eco-500 to-ocean-500 flex items-center justify-center text-white">
+              <div className="h-12 w-12 rounded-full bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center text-white">
                 <User size={20} />
               </div>
               <div className="ml-3">
@@ -259,7 +259,7 @@ function Dashboard() {
                     to={item.path}
                     className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
                       location.pathname === item.path
-                        ? "bg-gradient-to-r from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 border-r-2 border-eco-500"
+                        ? "bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 border-r-2 border-eco-500"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
@@ -276,7 +276,7 @@ function Dashboard() {
 
           {/* Live Sensor Status */}
           {latestSensorData && (
-            <div className="p-4 mx-4 mb-4 rounded-xl bg-gradient-to-r from-eco-500/10 to-ocean-500/10 border border-eco-200 dark:border-eco-800">
+            <div className="p-4 mx-4 mb-4 rounded-xl bg-linear-to-br from-eco-500/10 to-ocean-500/10 border border-eco-200 dark:border-eco-800">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
                 LIVE DATA
               </p>
