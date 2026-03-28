@@ -1,38 +1,48 @@
 // src/pages/dashboard/Alerts.jsx
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, CheckCircle, Eye, Check, Loader2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Eye,
+  Check,
+  Loader2,
+  AlertCircle,
+  CircleAlert,
+  TriangleAlert,
+  Info,
+} from "lucide-react";
 import {
   useGetAlertsQuery,
   useResolveAlertMutation,
   useAcknowledgeAlertMutation,
 } from "../../services/api";
 import { toast } from "react-toastify";
+import Pagination from "../../components/common/Pagination";
 
 function Alerts() {
   const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+
   const {
     data: alertsData,
     isLoading,
-    error,
     refetch,
   } = useGetAlertsQuery({ status: filter !== "all" ? filter : undefined });
   const [resolveAlert, { isLoading: isResolving }] = useResolveAlertMutation();
   const [acknowledgeAlert, { isLoading: isAcknowledging }] =
     useAcknowledgeAlertMutation();
 
-  // Debug: Log the actual response
-  useEffect(() => {
-    if (alertsData) {
-      console.log("Alerts API Response:", alertsData);
-    }
-    if (error) {
-      console.error("Alerts API Error:", error);
-    }
-  }, [alertsData, error]);
-
-  // Extract alerts array from response - handle different response structures
   const alerts = alertsData?.data || alertsData || [];
   const totalAlerts = alertsData?.totalItems || alerts.length;
+
+  const offset = currentPage * itemsPerPage;
+  const paginatedAlerts = alerts.slice(offset, offset + itemsPerPage);
+  const totalPages = Math.ceil(alerts.length / itemsPerPage);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
 
   const handleResolve = async (id) => {
     try {
@@ -40,7 +50,6 @@ function Alerts() {
       toast.success("Alert resolved");
       refetch();
     } catch (error) {
-      console.error("Resolve error:", error);
       toast.error(error?.data?.message || "Failed to resolve alert");
     }
   };
@@ -51,7 +60,6 @@ function Alerts() {
       toast.success("Alert acknowledged");
       refetch();
     } catch (error) {
-      console.error("Acknowledge error:", error);
       toast.error(error?.data?.message || "Failed to acknowledge alert");
     }
   };
@@ -63,28 +71,28 @@ function Alerts() {
           bg: "bg-red-100 dark:bg-red-900/30",
           text: "text-red-700 dark:text-red-400",
           border: "border-red-500",
-          icon: "🔴",
+          icon: AlertCircle,
         };
       case "critical":
         return {
           bg: "bg-orange-100 dark:bg-orange-900/30",
           text: "text-orange-700 dark:text-orange-400",
           border: "border-orange-500",
-          icon: "🟠",
+          icon: CircleAlert,
         };
       case "warning":
         return {
           bg: "bg-yellow-100 dark:bg-yellow-900/30",
           text: "text-yellow-700 dark:text-yellow-400",
           border: "border-yellow-500",
-          icon: "🟡",
+          icon: TriangleAlert,
         };
       default:
         return {
           bg: "bg-blue-100 dark:bg-blue-900/30",
           text: "text-blue-700 dark:text-blue-400",
           border: "border-blue-500",
-          icon: "🔵",
+          icon: Info,
         };
     }
   };
@@ -112,7 +120,10 @@ function Alerts() {
           {["all", "active", "resolved", "acknowledged"].map((status) => (
             <button
               key={status}
-              onClick={() => setFilter(status)}
+              onClick={() => {
+                setFilter(status);
+                setCurrentPage(0);
+              }}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${
                 filter === status
                   ? "bg-eco-600 text-white"
@@ -126,7 +137,7 @@ function Alerts() {
       </div>
 
       <div className="space-y-4">
-        {alerts.length === 0 ? (
+        {paginatedAlerts.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400">
@@ -137,8 +148,9 @@ function Alerts() {
             </p>
           </div>
         ) : (
-          alerts.map((alert) => {
+          paginatedAlerts.map((alert) => {
             const styles = getSeverityStyles(alert.severity);
+            const IconComponent = styles.icon;
             return (
               <div
                 key={alert._id}
@@ -147,7 +159,7 @@ function Alerts() {
                 <div className="flex flex-wrap justify-between items-start gap-4">
                   <div className="flex gap-4">
                     <div className={`p-2 rounded-xl ${styles.bg}`}>
-                      <span className="text-xl">{styles.icon}</span>
+                      <IconComponent className={`h-5 w-5 ${styles.text}`} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -213,6 +225,14 @@ function Alerts() {
           })
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageClick}
+        itemsPerPage={itemsPerPage}
+        totalItems={alerts.length}
+      />
     </div>
   );
 }
