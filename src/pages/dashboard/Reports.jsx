@@ -1,15 +1,6 @@
 // src/pages/dashboard/Reports.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FileText,
-  Download,
-  Eye,
-  Trash2,
-  Calendar,
-  Loader2,
-  Plus,
-} from "lucide-react";
+import { FileText, Download, Eye, Trash2, Loader2, Plus } from "lucide-react";
 import {
   useGenerateReportMutation,
   useGetReportsQuery,
@@ -17,10 +8,14 @@ import {
 } from "../../services/api";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import Pagination from "../../components/common/Pagination";
 
 function Reports() {
   const [reportType, setReportType] = useState("weekly");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+
   const [generateReport, { isLoading: isGenerating }] =
     useGenerateReportMutation();
   const [deleteReport, { isLoading: isDeleting }] = useDeleteReportMutation();
@@ -54,15 +49,28 @@ function Reports() {
     }
   };
 
+  const offset = currentPage * itemsPerPage;
+  const paginatedReports = reports?.slice(offset, offset + itemsPerPage) || [];
+  const totalPages = Math.ceil((reports?.length || 0) / itemsPerPage);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="animate-spin h-8 w-8 text-eco-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Reports
-        </h1>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Reports
+      </h1>
 
-      {/* Generate Report Card */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Generate New Report
@@ -123,7 +131,6 @@ function Reports() {
         </div>
       </div>
 
-      {/* Reports List */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -152,7 +159,7 @@ function Reports() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {reports?.map((report) => (
+              {paginatedReports.map((report) => (
                 <tr
                   key={report._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -205,6 +212,13 @@ function Reports() {
             </div>
           )}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageClick}
+          itemsPerPage={itemsPerPage}
+          totalItems={reports?.length || 0}
+        />
       </div>
     </div>
   );

@@ -17,11 +17,13 @@ import {
   Droplets,
   Wind,
   Download,
-  Calendar,
   RefreshCw,
+  Sprout,
+  Waves,
 } from "lucide-react";
 import { useGetAllSensorDataQuery } from "../../services/api";
 import { format } from "date-fns";
+import Pagination from "../../components/common/Pagination";
 
 ChartJS.register(
   CategoryScale,
@@ -38,6 +40,8 @@ function Sensors() {
   const [selectedMetric, setSelectedMetric] = useState("all");
   const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery();
   const [sensorReadings, setSensorReadings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
@@ -59,11 +63,23 @@ function Sensors() {
       icon: Droplets,
     },
     { key: "co2_ppm", label: "CO₂ (ppm)", color: "#20B2AA", icon: Wind },
+    {
+      key: "soil_moisture_percent",
+      label: "Soil Moisture (%)",
+      color: "#D4A017",
+      icon: Sprout,
+    },
+    {
+      key: "water_level_percent",
+      label: "Water Level (%)",
+      color: "#1E88E5",
+      icon: Waves,
+    },
   ];
 
-  const labels = sensorReadings.map((d) =>
-    format(new Date(d.timestamp), "MM/dd HH:mm"),
-  );
+  const labels = sensorReadings
+    .slice(0, 100)
+    .map((d) => format(new Date(d.timestamp), "MM/dd HH:mm"));
 
   const chartData = {
     labels,
@@ -71,7 +87,7 @@ function Sensors() {
       selectedMetric === "all"
         ? metrics.map((metric) => ({
             label: metric.label,
-            data: sensorReadings.map((d) => d[metric.key]) || [],
+            data: sensorReadings.slice(0, 100).map((d) => d[metric.key] ?? 0),
             borderColor: metric.color,
             backgroundColor: `${metric.color}20`,
             tension: 0.4,
@@ -81,7 +97,9 @@ function Sensors() {
         : [
             {
               label: metrics.find((m) => m.key === selectedMetric)?.label,
-              data: sensorReadings.map((d) => d[selectedMetric]) || [],
+              data: sensorReadings
+                .slice(0, 100)
+                .map((d) => d[selectedMetric] ?? 0),
               borderColor: "#2E7D32",
               backgroundColor: "#2E7D3220",
               tension: 0.4,
@@ -95,8 +113,28 @@ function Sensors() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: "top" },
-      tooltip: { mode: "index", intersect: false },
+      legend: { position: "top", labels: { font: { size: 11 } } },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || "";
+            let value = context.raw;
+            if (value !== undefined && value !== null && !isNaN(value)) {
+              label += `: ${value.toFixed(1)}`;
+              if (context.dataset.label.includes("Temperature")) label += "°C";
+              if (context.dataset.label.includes("Humidity")) label += "%";
+              if (context.dataset.label.includes("CO₂")) label += " ppm";
+              if (context.dataset.label.includes("Soil")) label += "%";
+              if (context.dataset.label.includes("Water")) label += "%";
+            } else {
+              label += ": No data";
+            }
+            return label;
+          },
+        },
+      },
     },
     scales: {
       y: { beginAtZero: false, grid: { color: "#E0E0E0" } },
@@ -122,11 +160,11 @@ function Sensors() {
     ];
     const rows = sensorReadings.map((r) => [
       new Date(r.timestamp).toLocaleString(),
-      r.temperature,
-      r.humidity,
-      r.co2_ppm,
-      r.soil_moisture_percent || 0,
-      r.water_level_percent || 0,
+      r.temperature ?? 0,
+      r.humidity ?? 0,
+      r.co2_ppm ?? 0,
+      r.soil_moisture_percent ?? 0,
+      r.water_level_percent ?? 0,
     ]);
     const csvContent = [headers, ...rows]
       .map((row) => row.join(","))
@@ -138,6 +176,14 @@ function Sensors() {
     a.download = `sensor_data_${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const offset = currentPage * itemsPerPage;
+  const paginatedReadings = sensorReadings.slice(offset, offset + itemsPerPage);
+  const totalPages = Math.ceil(sensorReadings.length / itemsPerPage);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
   };
 
   return (
@@ -238,7 +284,7 @@ function Sensors() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {sensorReadings.slice(0, 50).map((reading, idx) => (
+              {paginatedReadings.map((reading, idx) => (
                 <tr
                   key={idx}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -246,20 +292,14 @@ function Sensors() {
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {reading.temperature}°C
+                  <td className="px-6 py-4 text-sm">{reading.temperature}°C</td>
+                  <td className="px-6 py-4 text-sm">{reading.humidity}%</td>
+                  <td className="px-6 py-4 text-sm">{reading.co2_ppm} ppm</td>
+                  <td className="px-6 py-4 text-sm">
+                    {reading.soil_moisture_percent ?? 0}%
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {reading.humidity}%
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {reading.co2_ppm} ppm
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {reading.soil_moisture_percent || 0}%
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {reading.water_level_percent || 0}%
+                  <td className="px-6 py-4 text-sm">
+                    {reading.water_level_percent ?? 0}%
                   </td>
                 </tr>
               ))}
@@ -271,6 +311,13 @@ function Sensors() {
             </div>
           )}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageClick}
+          itemsPerPage={itemsPerPage}
+          totalItems={sensorReadings.length}
+        />
       </div>
     </div>
   );
