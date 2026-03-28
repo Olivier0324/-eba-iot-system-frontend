@@ -9,7 +9,8 @@ const Pagination = ({
   itemsPerPage = 10,
   totalItems = 0,
 }) => {
-  if (totalPages <= 1) return null;
+  // If no items or only one page, don't show pagination
+  if (totalPages <= 1 || totalItems === 0) return null;
 
   const startItem = currentPage * itemsPerPage + 1;
   const endItem = Math.min((currentPage + 1) * itemsPerPage, totalItems);
