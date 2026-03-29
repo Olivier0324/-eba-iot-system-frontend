@@ -368,9 +368,9 @@ function Analytics() {
   const paginatedData = filteredData.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+ const handlePageClick = (page) => {
+   setCurrentPage(page);
+ };
 
   const clearDateFilter = () => {
     setStartDate(null);

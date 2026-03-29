@@ -40,9 +40,9 @@ function Alerts() {
   const paginatedAlerts = alerts.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(alerts.length / itemsPerPage);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+ const handlePageClick = (page) => {
+   setCurrentPage(page);
+ };
 
   const handleResolve = async (id) => {
     try {
