@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { User, Bell, Shield, Moon, Sun, Mail, Save, Key } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
+
 import {
   useChangePasswordMutation,
   useUpdateProfileMutation,
@@ -15,6 +17,8 @@ function Settings() {
   );
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+
   const [profileData, setProfileData] = useState({
     username: user?.username || "",
     email: user?.email || "",
@@ -29,17 +33,6 @@ function Settings() {
   const [changePassword, { isLoading: isChangingPassword }] =
     useChangePasswordMutation();
 
-  const handleThemeToggle = () => {
-    const newTheme = !darkMode;
-    setDarkMode(newTheme);
-    if (newTheme) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -227,7 +220,7 @@ function Settings() {
                 Dark Mode
               </span>
               <button
-                onClick={handleThemeToggle}
+                onClick={toggleTheme}
                 className={`relative w-12 h-6 rounded-full transition-colors ${darkMode ? "bg-eco-600" : "bg-gray-300 dark:bg-gray-600"}`}
               >
                 <div
