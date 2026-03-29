@@ -42,7 +42,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 py-4 px-4 border-t border-gray-200 dark:border-gray-700">
       <div className="text-sm text-gray-500 dark:text-gray-400">
         Showing {startItem} to {endItem} of {totalItems} entries
       </div>

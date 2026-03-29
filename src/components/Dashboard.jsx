@@ -181,7 +181,7 @@ function Dashboard() {
             <Menu size={24} />
           </button>
           <span className="text-xl font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
-            EBA OBSERVE
+            EBA OBSERVA
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ function Dashboard() {
                 </span>
                 <span className="text-lg font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
                   {" "}
-                  OBSERVE
+                  OBSERVA
                 </span>
               </div>
             </div>
