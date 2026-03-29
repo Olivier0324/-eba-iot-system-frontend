@@ -182,9 +182,9 @@ function Sensors() {
   const paginatedReadings = sensorReadings.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(sensorReadings.length / itemsPerPage);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+ const handlePageClick = (page) => {
+   setCurrentPage(page);
+ };
 
   return (
     <div className="space-y-6">

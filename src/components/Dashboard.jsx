@@ -40,6 +40,7 @@ function Dashboard() {
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
 
+
   // Fetch latest sensor data - using getAllSensorDataQuery instead
   const { data: sensorData } = useGetAllSensorDataQuery();
 
@@ -181,7 +182,7 @@ function Dashboard() {
             <Menu size={24} />
           </button>
           <span className="text-xl font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
-            EBA OBSERVE
+            EBA OBSERVA
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -218,7 +219,7 @@ function Dashboard() {
                 </span>
                 <span className="text-lg font-bold bg-linear-to-br from-eco-600 to-ocean-600 bg-clip-text text-transparent">
                   {" "}
-                  OBSERVE
+                  OBSERVA
                 </span>
               </div>
             </div>
@@ -369,7 +370,7 @@ function Dashboard() {
           <div className="flex items-center">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="mr-4 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors"
+              className="mr-4 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors md:hidden"
             >
               <Menu size={20} />
             </button>

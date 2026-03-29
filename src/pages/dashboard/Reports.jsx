@@ -53,9 +53,9 @@ function Reports() {
   const paginatedReports = reports?.slice(offset, offset + itemsPerPage) || [];
   const totalPages = Math.ceil((reports?.length || 0) / itemsPerPage);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+ const handlePageClick = (page) => {
+   setCurrentPage(page);
+ };
 
   if (isLoading) {
     return (

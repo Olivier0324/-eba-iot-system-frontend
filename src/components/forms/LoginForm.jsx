@@ -5,13 +5,17 @@ import { setEmail } from "../../services/reducers/authReducer.js";
 import { EyeClosed, Eye, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/api/index.js";
-import logo from "../../assets/eba_logo.png";
+import Logo from "../common/Logo.jsx";
 
 function LoginForm() {
   const [loginUser, { isLoading: isMutationLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  //navigate to home page
+   const navigateTo = (path) => {
+     navigate(path);
+   };
 
   // State for form data
   const [formData, setFormData] = useState({
@@ -68,11 +72,11 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-eco-100 dark:border-gray-700">
         {/* Header */}
+        <div className="flex justify-center">
+          <Logo fn={() => navigateTo("/")} />
+        </div>
         <div className="text-center">
-          <div className="mx-auto  flex items-center justify-center ">
-            <img src={logo} alt="EBA Logo" className="h-full w-full object-contain" />
-          </div>
-          <h2 className="mt-2 text-3xl font-extrabold text-eco-900 dark:text-eco-100">
+          <h2 className=" text-3xl font-extrabold text-eco-900 dark:text-eco-100">
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">

@@ -1,6 +1,6 @@
 // src/components/common/Pagination.jsx
-import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Pagination = ({
   currentPage,
@@ -12,7 +12,7 @@ const Pagination = ({
   // If no items or only one page, don't show pagination
   if (totalPages <= 1 || totalItems === 0) return null;
 
-  const startItem = currentPage * itemsPerPage + 1;
+  const startItem = Math.min(currentPage * itemsPerPage + 1, totalItems);
   const endItem = Math.min((currentPage + 1) * itemsPerPage, totalItems);
 
   const getPageNumbers = () => {
@@ -42,7 +42,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 py-4 border-t border-gray-200 dark:border-gray-700">
       <div className="text-sm text-gray-500 dark:text-gray-400">
         Showing {startItem} to {endItem} of {totalItems} entries
       </div>
