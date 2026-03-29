@@ -313,9 +313,9 @@ function Overview() {
   const paginatedReadings = validReadings.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(validReadings.length / itemsPerPage);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+const handlePageClick = (page) => {
+  setCurrentPage(page);
+};
 
   // Clear date filter
   const clearDateFilter = () => {
@@ -336,9 +336,9 @@ function Overview() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-eco-500 to-ocean-500 rounded-2xl p-6 text-white">
+      <div className="bg-linear-to-r from-eco-500 to-ocean-500 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3">
-          <Eye className="h-8 w-8" />
+          {/* <Eye className="h-8 w-8" /> */}
           <div>
             <h1 className="text-2xl font-bold">Environmental Dashboard</h1>
             <p className="text-white/80 mt-1">
@@ -383,7 +383,7 @@ function Overview() {
           >
             <div className="flex items-center justify-between mb-2">
               <div
-                className={`p-1.5 rounded-xl bg-gradient-to-br ${stat.color} text-white`}
+                className={`p-1.5 rounded-xl bg-linear-to-br ${stat.color} text-white`}
               >
                 <stat.icon size={16} />
               </div>

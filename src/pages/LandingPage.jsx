@@ -269,7 +269,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-eco-50 via-white to-ocean-50 pt-16"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-br from-eco-50 via-white to-ocean-50 pt-16"
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -291,7 +291,7 @@ const LandingPage = () => {
               </div>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Monitoring Ecosystem-Based
-                <span className="bg-gradient-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent block mt-2">
+                <span className="bg-linear-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent block mt-2">
                   Adaptation
                 </span>
                 in Real-Time
@@ -352,7 +352,7 @@ const LandingPage = () => {
                     <div className="text-sm text-gray-500">Soil Moisture</div>
                   </div>
                 </div>
-                <div className="h-32 bg-gradient-to-r from-eco-500 to-ocean-500 rounded-xl flex items-center justify-center">
+                <div className="h-32 bg-linear-to-r from-eco-500 to-ocean-500 rounded-xl flex items-center justify-center">
                   <div className="text-center text-white">
                     <div className="text-sm">Live Data Stream</div>
                     <div className="text-xs opacity-80">
@@ -454,7 +454,7 @@ const LandingPage = () => {
               viewport={{ once: true }}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
             >
-              <div className="bg-gradient-to-br from-eco-50 to-ocean-50 rounded-xl p-6">
+              <div className="bg-linear-to-br from-eco-50 to-ocean-50 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Project Information
                 </h3>
@@ -526,7 +526,7 @@ const LandingPage = () => {
                 <li className="flex items-start gap-2">
                   <CheckCircle
                     size={18}
-                    className="text-eco-600 mt-0.5 flex-shrink-0"
+                    className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
                     Deploy IoT sensors for real-time environmental data
@@ -536,7 +536,7 @@ const LandingPage = () => {
                 <li className="flex items-start gap-2">
                   <CheckCircle
                     size={18}
-                    className="text-eco-600 mt-0.5 flex-shrink-0"
+                    className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
                     Develop cloud-based platform for data aggregation and
@@ -546,7 +546,7 @@ const LandingPage = () => {
                 <li className="flex items-start gap-2">
                   <CheckCircle
                     size={18}
-                    className="text-eco-600 mt-0.5 flex-shrink-0"
+                    className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
                     Create intuitive dashboard for data visualization and
@@ -556,7 +556,7 @@ const LandingPage = () => {
                 <li className="flex items-start gap-2">
                   <CheckCircle
                     size={18}
-                    className="text-eco-600 mt-0.5 flex-shrink-0"
+                    className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
                     Support evidence-based decision-making for climate
@@ -617,7 +617,7 @@ const LandingPage = () => {
                 className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all group"
               >
                 <div
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
+                  className={`w-14 h-14 rounded-xl bg-linear-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
                 >
                   <feature.icon className="h-7 w-7 text-white" />
                 </div>
@@ -682,7 +682,7 @@ const LandingPage = () => {
       {/* Testimonials Slider */}
       <section
         id="testimonials"
-        className="py-20 bg-gradient-to-br from-eco-50 to-ocean-50"
+        className="py-20 bg-linear-to-br from-eco-50 to-ocean-50"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -762,7 +762,8 @@ const LandingPage = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Eye className="h-8 w-8 text-eco-400" />
-                <span className="text-xl font-bold">EBA OBSERVA</span>
+                              <span className="text-xl font-bold">EBA OBSERVA</span>
+                              
               </div>
               <p className="text-gray-400 text-sm">
                 IoT-based Monitoring System for Ecosystem-Based Adaptation in
