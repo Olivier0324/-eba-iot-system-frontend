@@ -40,14 +40,32 @@ function Sensors() {
   const [selectedMetric, setSelectedMetric] = useState("all");
   const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery();
   const [sensorReadings, setSensorReadings] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 20;
 
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
-      setSensorReadings(sensorData);
+      // Filter out entries that have missing temperature, humidity, or co2_ppm
+      // These are incomplete sensor readings (only device_id and interval_ms)
+      const validData = sensorData.filter(
+        (item) =>
+          item.temperature !== undefined &&
+          item.temperature !== null &&
+          item.humidity !== undefined &&
+          item.humidity !== null &&
+          item.co2_ppm !== undefined &&
+          item.co2_ppm !== null
+      );
+      setSensorReadings(validData);
     }
   }, [sensorData]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   const metrics = [
     {
@@ -77,9 +95,11 @@ function Sensors() {
     },
   ];
 
-  const labels = sensorReadings
-    .slice(0, 100)
-    .map((d) => format(new Date(d.timestamp), "MM/dd HH:mm"));
+  // Use only valid readings for chart
+  const validForChart = sensorReadings.slice(0, 100);
+  const labels = validForChart.map((d) =>
+    format(new Date(d.timestamp), "MM/dd HH:mm")
+  );
 
   const chartData = {
     labels,
@@ -87,7 +107,7 @@ function Sensors() {
       selectedMetric === "all"
         ? metrics.map((metric) => ({
             label: metric.label,
-            data: sensorReadings.slice(0, 100).map((d) => d[metric.key] ?? 0),
+            data: validForChart.map((d) => d[metric.key] ?? 0),
             borderColor: metric.color,
             backgroundColor: `${metric.color}20`,
             tension: 0.4,
@@ -97,9 +117,7 @@ function Sensors() {
         : [
             {
               label: metrics.find((m) => m.key === selectedMetric)?.label,
-              data: sensorReadings
-                .slice(0, 100)
-                .map((d) => d[selectedMetric] ?? 0),
+              data: validForChart.map((d) => d[selectedMetric] ?? 0),
               borderColor: "#2E7D32",
               backgroundColor: "#2E7D3220",
               tension: 0.4,
@@ -182,9 +200,9 @@ function Sensors() {
   const paginatedReadings = sensorReadings.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(sensorReadings.length / itemsPerPage);
 
- const handlePageClick = (page) => {
-   setCurrentPage(page);
- };
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="space-y-6">
@@ -194,11 +212,15 @@ function Sensors() {
         </h1>
         <div className="flex gap-3">
           <button
-            onClick={() => refetch()}
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700 disabled:opacity-50"
           >
-            <RefreshCw size={18} />
-            <span className="text-sm">Refresh</span>
+            <RefreshCw
+              size={18}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
+            <span className="text-sm">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
           </button>
           <button
             onClick={exportCSV}
@@ -248,7 +270,7 @@ function Sensors() {
           </div>
         ) : (
           <div className="h-96 flex items-center justify-center text-gray-500">
-            No data available
+            No valid data available
           </div>
         )}
       </div>
@@ -292,9 +314,15 @@ function Sensors() {
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
                   </td>
-                  <td className="px-6 py-4 text-sm">{reading.temperature}°C</td>
-                  <td className="px-6 py-4 text-sm">{reading.humidity}%</td>
-                  <td className="px-6 py-4 text-sm">{reading.co2_ppm} ppm</td>
+                  <td className="px-6 py-4 text-sm">
+                    {reading.temperature?.toFixed(1)}°C
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    {reading.humidity?.toFixed(1)}%
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    {reading.co2_ppm} ppm
+                  </td>
                   <td className="px-6 py-4 text-sm">
                     {reading.soil_moisture_percent ?? 0}%
                   </td>
@@ -307,7 +335,7 @@ function Sensors() {
           </table>
           {sensorReadings.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              No historical data available
+              No sensor data available
             </div>
           )}
         </div>
