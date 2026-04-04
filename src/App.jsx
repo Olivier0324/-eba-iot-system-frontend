@@ -20,7 +20,6 @@ import ControlPanel from "./pages/dashboard/ControlPanel";
 import Settings from "./pages/dashboard/Settings";
 
 // Resource Pages
-import ApiDocs from "./pages/ApiDocs";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost"; // Import the new component
 import Research from "./pages/Research";
@@ -38,7 +37,6 @@ function App() {
         <Route path="/account-inactive" element={<AccountInactive />} />
 
         {/* Resource Routes */}
-        <Route path="/api-docs" element={<ApiDocs />} />
         <Route path="/blog" element={<Blog />} />
         {/* New Route for individual blog posts */}
         <Route path="/blog/:id" element={<BlogPost />} /> 

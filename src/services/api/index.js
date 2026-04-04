@@ -15,7 +15,7 @@ export const api = createApi({
             return headers;
         },
     }),
-    tagTypes: ['Sensor', 'Report', 'Alert', 'Notification', 'Device'],
+    tagTypes: ['Sensor', 'Report', 'Alert', 'Notification', 'Device', 'Blog', 'Research', 'Contact'],
     endpoints: (builder) => ({
         // ==================== AUTH ENDPOINTS ====================
         login: builder.mutation({
@@ -73,6 +73,11 @@ export const api = createApi({
         }),
         getSensorStats: builder.query({
             query: () => '/sensor/stats',
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Sensor'],
+        }),
+        getLatestData: builder.query({
+            query: () => '/sensor/latest',
             transformResponse: (response) => response.data || response,
             providesTags: ['Sensor'],
         }),
@@ -199,13 +204,174 @@ export const api = createApi({
             transformResponse: (response) => response.data || response,
             providesTags: ['Device'],
         }),
+
+        // ==================== BLOG ENDPOINTS ====================
+        // Public blog endpoints
+        getAllBlogs: builder.query({
+            query: (params) => ({
+                url: '/blog',
+                params,
+            }),
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Blog'],
+        }),
+        getBlogBySlug: builder.query({
+            query: (slug) => `/blog/${slug}`,
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Blog'],
+        }),
+        getBlogCategories: builder.query({
+            query: () => '/blog/categories',
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Blog'],
+        }),
+
+        // Admin blog endpoints
+        createBlog: builder.mutation({
+            query: (data) => ({
+                url: '/blog',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Blog'],
+        }),
+        getBlogById: builder.query({
+            query: (id) => `/blog/admin/${id}`,
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Blog'],
+        }),
+        updateBlog: builder.mutation({
+            query: ({ id, ...data }) => ({
+                url: `/blog/${id}`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['Blog'],
+        }),
+        deleteBlog: builder.mutation({
+            query: (id) => ({
+                url: `/blog/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Blog'],
+        }),
+
+        // ==================== RESEARCH PAPER ENDPOINTS ====================
+        // Public research endpoints
+        getAllResearchPapers: builder.query({
+            query: (params) => ({
+                url: '/research',
+                params,
+            }),
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Research'],
+        }),
+        getResearchPaperBySlug: builder.query({
+            query: (slug) => `/research/${slug}`,
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Research'],
+        }),
+        getResearchCategories: builder.query({
+            query: () => '/research/categories',
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Research'],
+        }),
+        incrementResearchDownload: builder.mutation({
+            query: (id) => ({
+                url: `/research/${id}/download`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Research'],
+        }),
+
+        // Admin research endpoints
+        createResearchPaper: builder.mutation({
+            query: (data) => ({
+                url: '/research',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Research'],
+        }),
+        getResearchPaperById: builder.query({
+            query: (id) => `/research/admin/${id}`,
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Research'],
+        }),
+        updateResearchPaper: builder.mutation({
+            query: ({ id, ...data }) => ({
+                url: `/research/${id}`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['Research'],
+        }),
+        deleteResearchPaper: builder.mutation({
+            query: (id) => ({
+                url: `/research/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Research'],
+        }),
+
+        // ==================== CONTACT MESSAGE ENDPOINTS ====================
+        // Public contact endpoint
+        submitContactMessage: builder.mutation({
+            query: (data) => ({
+                url: '/contact',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Contact'],
+        }),
+
+        // Admin contact endpoints
+        getAllContactMessages: builder.query({
+            query: (params) => ({
+                url: '/contact',
+                params,
+            }),
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Contact'],
+        }),
+        getContactMessageStats: builder.query({
+            query: () => '/contact/stats',
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Contact'],
+        }),
+        getContactMessageById: builder.query({
+            query: (id) => `/contact/${id}`,
+            transformResponse: (response) => response.data || response,
+            providesTags: ['Contact'],
+        }),
+        replyToContactMessage: builder.mutation({
+            query: ({ id, ...data }) => ({
+                url: `/contact/${id}/reply`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['Contact'],
+        }),
+        resolveContactMessage: builder.mutation({
+            query: (id) => ({
+                url: `/contact/${id}/resolve`,
+                method: 'PUT',
+            }),
+            invalidatesTags: ['Contact'],
+        }),
+        deleteContactMessage: builder.mutation({
+            query: (id) => ({
+                url: `/contact/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Contact'],
+        }),
     }),
 });
 
 // ==================== HOOKS ====================
-// src/services/api/index.js - Add these to your exports
+// Auth hooks
 export const {
-    // Auth hooks
     useLoginMutation,
     useVerifyOTPMutation,
     useLogoutMutation,
@@ -213,28 +379,78 @@ export const {
     useGetCurrentUserQuery,
     useChangePasswordMutation,
     useUpdateProfileMutation,
-    // Sensor hooks
+} = api;
+
+// Sensor hooks
+export const {
     useGetAllSensorDataQuery,
     useGetSensorStatsQuery,
-    // Report hooks
+    useGetLatestDataQuery,
+} = api;
+
+// Report hooks
+export const {
     useGenerateReportMutation,
     useGetReportsQuery,
     useGetReportByIdQuery,
     useDeleteReportMutation,
-    // Alert hooks
+} = api;
+
+// Alert hooks
+export const {
     useGetAlertsQuery,
     useGetActiveAlertsQuery,
     useGetAlertByIdQuery,
     useResolveAlertMutation,
     useAcknowledgeAlertMutation,
     useGetAlertStatisticsQuery,
-    // Notification hooks
+} = api;
+
+// Notification hooks
+export const {
     useGetNotificationsQuery,
     useMarkNotificationAsReadMutation,
     useMarkAllNotificationsAsReadMutation,
     useDeleteNotificationMutation,
-    // Device Control hooks
+} = api;
+
+// Device Control hooks
+export const {
     useGetDeviceStatusQuery,
     useSetIntervalMutation,
     useGetIntervalPresetsQuery,
+} = api;
+
+// Blog hooks
+export const {
+    useGetAllBlogsQuery,
+    useGetBlogBySlugQuery,
+    useGetBlogCategoriesQuery,
+    useCreateBlogMutation,
+    useGetBlogByIdQuery,
+    useUpdateBlogMutation,
+    useDeleteBlogMutation,
+} = api;
+
+// Research Paper hooks
+export const {
+    useGetAllResearchPapersQuery,
+    useGetResearchPaperBySlugQuery,
+    useGetResearchCategoriesQuery,
+    useIncrementResearchDownloadMutation,
+    useCreateResearchPaperMutation,
+    useGetResearchPaperByIdQuery,
+    useUpdateResearchPaperMutation,
+    useDeleteResearchPaperMutation,
+} = api;
+
+// Contact Message hooks
+export const {
+    useSubmitContactMessageMutation,
+    useGetAllContactMessagesQuery,
+    useGetContactMessageStatsQuery,
+    useGetContactMessageByIdQuery,
+    useReplyToContactMessageMutation,
+    useResolveContactMessageMutation,
+    useDeleteContactMessageMutation,
 } = api;

@@ -87,7 +87,7 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="flex-grow pt-20">
+      <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}
           <div className="mb-8 flex justify-center cursor-pointer" onClick={() => navigate("/")}>

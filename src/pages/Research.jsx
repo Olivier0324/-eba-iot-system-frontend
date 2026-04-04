@@ -59,7 +59,7 @@ const Research = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="flex-grow pt-20">
+      <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}
           <div className="mb-8 flex justify-center cursor-pointer" onClick={() => navigate("/")}>
@@ -99,14 +99,14 @@ const Research = () => {
                 >
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* Paper Icon/Number */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-12 h-12 rounded-lg bg-eco-50 text-eco-600 flex items-center justify-center font-bold text-lg border border-eco-100">
                         {paper.id}
                       </div>
                     </div>
 
                     {/* Paper Content */}
-                    <div className="flex-grow">
+                    <div className="grow">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-3">
                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-eco-600 transition-colors leading-snug">
                           {paper.title}

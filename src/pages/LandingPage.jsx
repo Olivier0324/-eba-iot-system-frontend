@@ -1,5 +1,5 @@
 // src/pages/LandingPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   Leaf,
@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/common/Navbar";
+import Footer from "../components/common/Footer";
+import { useGetLatestDataQuery } from "../services/api";
 
 // Testimonial Data
 const testimonials = [
@@ -86,8 +88,95 @@ const teamMembers = [
   },
 ];
 
+// Calculate average from historical data (you can connect to your stats API for real averages)
+const calculateAverage = (data, key) => {
+  if (!data || data.length === 0) return "--";
+  const values = data
+    .map((item) => item[key])
+    .filter((v) => v !== undefined && v !== null);
+  if (values.length === 0) return "--";
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  return avg.toFixed(1);
+};
+
 const LandingPage = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const { data: latestData, isLoading, refetch } = useGetLatestDataQuery();
+  const [liveData, setLiveData] = useState({
+    temperature: "--",
+    humidity: "--",
+    co2_ppm: "--",
+    soil_moisture: "--",
+    water_level: "--",
+    interval_seconds: 60,
+    last_updated: new Date(),
+  });
+
+  useEffect(() => {
+    if (latestData) {
+      if (latestData.data && latestData.data.temperature !== undefined) {
+        const intervalSeconds = latestData.data.interval_ms
+          ? Math.round(latestData.data.interval_ms / 1000)
+          : 60;
+        setLiveData({
+          temperature:
+            latestData.data.temperature !== undefined
+              ? latestData.data.temperature
+              : "--",
+          humidity:
+            latestData.data.humidity !== undefined
+              ? latestData.data.humidity
+              : "--",
+          co2_ppm:
+            latestData.data.co2_ppm !== undefined
+              ? latestData.data.co2_ppm
+              : "--",
+          soil_moisture:
+            latestData.data.soil_moisture_percent !== undefined
+              ? latestData.data.soil_moisture_percent
+              : "--",
+          water_level:
+            latestData.data.water_level_percent !== undefined
+              ? latestData.data.water_level_percent
+              : "--",
+          interval_seconds: intervalSeconds,
+          last_updated: new Date(),
+        });
+      } else if (latestData.temperature !== undefined) {
+        const intervalSeconds = latestData.interval_ms
+          ? Math.round(latestData.interval_ms / 1000)
+          : 60;
+        setLiveData({
+          temperature:
+            latestData.temperature !== undefined
+              ? latestData.temperature
+              : "--",
+          humidity:
+            latestData.humidity !== undefined ? latestData.humidity : "--",
+          co2_ppm: latestData.co2_ppm !== undefined ? latestData.co2_ppm : "--",
+          soil_moisture:
+            latestData.soil_moisture_percent !== undefined
+              ? latestData.soil_moisture_percent
+              : "--",
+          water_level:
+            latestData.water_level_percent !== undefined
+              ? latestData.water_level_percent
+              : "--",
+          interval_seconds: intervalSeconds,
+          last_updated: new Date(),
+        });
+      }
+    }
+  }, [latestData]);
+
+  // Auto-refresh every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000); // Refresh every 60 seconds
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
@@ -99,6 +188,16 @@ const LandingPage = () => {
     );
   };
 
+  // For average values - you can connect to a stats endpoint
+  // For now using placeholder values that will be replaced with actual API data
+  const avgValues = {
+    temperature: "--",
+    humidity: "--",
+    co2_ppm: "--",
+    soil_moisture: "--",
+    water_level: "--",
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -106,7 +205,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-eco-50 via-white to-ocean-50 pt-16"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-br from-eco-50 via-white to-ocean-50 pt-16"
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -128,7 +227,7 @@ const LandingPage = () => {
               </div>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Monitoring Ecosystem-Based
-                <span className="bg-gradient-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent block mt-2">
+                <span className="bg-linear-to-r from-eco-600 to-ocean-600 bg-clip-text text-transparent block mt-2">
                   Adaptation
                 </span>
                 in Real-Time
@@ -165,39 +264,73 @@ const LandingPage = () => {
               className="relative"
             >
               <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-eco-50 rounded-xl p-4 text-center">
-                    <Droplets className="h-8 w-8 text-eco-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-gray-900">
-                      25.3°C
+                {/* 5 Parameter Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                  {/* Temperature */}
+                  <div className="bg-eco-50 rounded-xl p-3 text-center">
+                    <Thermometer className="h-6 w-6 text-eco-600 mx-auto mb-1" />
+                    <div className="text-lg font-bold text-gray-900">
+                      {liveData.temperature !== "--"
+                        ? `${liveData.temperature}°C`
+                        : "--"}
                     </div>
-                    <div className="text-sm text-gray-500">Temperature</div>
+                    <div className="text-xs text-gray-500">Temperature</div>
                   </div>
-                  <div className="bg-ocean-50 rounded-xl p-4 text-center">
-                    <Wind className="h-8 w-8 text-ocean-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-gray-900">
-                      74.2%
+
+                  {/* Humidity */}
+                  <div className="bg-ocean-50 rounded-xl p-3 text-center">
+                    <Droplets className="h-6 w-6 text-ocean-600 mx-auto mb-1" />
+                    <div className="text-lg font-bold text-gray-900">
+                      {liveData.humidity !== "--"
+                        ? `${liveData.humidity}%`
+                        : "--"}
                     </div>
-                    <div className="text-sm text-gray-500">Humidity</div>
+                    <div className="text-xs text-gray-500">Humidity</div>
                   </div>
-                  <div className="bg-teal-50 rounded-xl p-4 text-center">
-                    <Activity className="h-8 w-8 text-teal-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-gray-900">
-                      892 ppm
+
+                  {/* CO₂ */}
+                  <div className="bg-teal-50 rounded-xl p-3 text-center">
+                    <Wind className="h-6 w-6 text-teal-600 mx-auto mb-1" />
+                    <div className="text-lg font-bold text-gray-900">
+                      {liveData.co2_ppm !== "--"
+                        ? `${liveData.co2_ppm} ppm`
+                        : "--"}
                     </div>
-                    <div className="text-sm text-gray-500">CO₂ Level</div>
+                    <div className="text-xs text-gray-500">CO₂</div>
                   </div>
-                  <div className="bg-yellow-50 rounded-xl p-4 text-center">
-                    <Droplets className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-gray-900">38%</div>
-                    <div className="text-sm text-gray-500">Soil Moisture</div>
+
+                  {/* Soil Moisture */}
+                  <div className="bg-yellow-50 rounded-xl p-3 text-center">
+                    <Droplets className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
+                    <div className="text-lg font-bold text-gray-900">
+                      {liveData.soil_moisture !== "--"
+                        ? `${liveData.soil_moisture}%`
+                        : "--"}
+                    </div>
+                    <div className="text-xs text-gray-500">Soil Moisture</div>
+                  </div>
+
+                  {/* Water Level */}
+                  <div className="bg-blue-50 rounded-xl p-3 text-center">
+                    <Droplets className="h-6 w-6 text-blue-600 mx-auto mb-1" />
+                    <div className="text-lg font-bold text-gray-900">
+                      {liveData.water_level !== "--"
+                        ? `${liveData.water_level}%`
+                        : "--"}
+                    </div>
+                    <div className="text-xs text-gray-500">Water Level</div>
                   </div>
                 </div>
-                <div className="h-32 bg-gradient-to-r from-eco-500 to-ocean-500 rounded-xl flex items-center justify-center">
+
+                {/* Live Data Stream Bar */}
+                <div className="h-28 bg-linear-to-r from-eco-500 to-ocean-500 rounded-xl flex items-center justify-center">
                   <div className="text-center text-white">
-                    <div className="text-sm">Live Data Stream</div>
-                    <div className="text-xs opacity-80">
-                      Updated every 60 seconds
+                    <div className="text-sm font-medium">Live Data Stream</div>
+                    <div className="text-xs opacity-80 mt-1">
+                      Updated every {liveData.interval_seconds} seconds
+                    </div>
+                    <div className="text-xs opacity-60 mt-1">
+                      Last update: {liveData.last_updated.toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
@@ -295,7 +428,7 @@ const LandingPage = () => {
               viewport={{ once: true }}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
             >
-              <div className="bg-gradient-to-br from-eco-50 to-ocean-50 rounded-xl p-6">
+              <div className="bg-linear-to-br from-eco-50 to-ocean-50 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Project Information
                 </h3>
@@ -363,15 +496,16 @@ const LandingPage = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 Key Objectives
               </h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="space-y-1 text-gray-600">
                 <li className="flex items-start gap-2">
                   <CheckCircle
                     size={18}
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-                    Deploy IoT sensors for real-time environmental data
-                    collection
+                    To identify and select critical, IoT-measurable
+                    environmental indicators for monitoring the effectiveness of
+                    wetland restoration and reforestation.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
@@ -380,8 +514,10 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-                    Develop cloud-based platform for data aggregation and
-                    storage
+                    To develop an IoT device for the continuous collection
+                    of real-time data on the selected indicators (e.g., soil
+                    moisture, water level, water quality) from the target EbA
+                    sites.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
@@ -390,8 +526,9 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-                    Create intuitive dashboard for data visualization and
-                    analysis
+                    To integrate a cloud-based data management platform for
+                    the seamless aggregation, storage, and processing of
+                    transmitted sensor data.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
@@ -400,8 +537,9 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-                    Support evidence-based decision-making for climate
-                    adaptation
+                  To design and prototype a web-based application
+                    dashboard for the visualization of real-time and historical
+                    environmental data to support decision-making.
                   </span>
                 </li>
               </ul>
@@ -458,7 +596,7 @@ const LandingPage = () => {
                 className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all group"
               >
                 <div
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
+                  className={`w-14 h-14 rounded-xl bg-linear-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
                 >
                   <feature.icon className="h-7 w-7 text-white" />
                 </div>
@@ -523,7 +661,7 @@ const LandingPage = () => {
       {/* Testimonials Slider */}
       <section
         id="testimonials"
-        className="py-20 bg-gradient-to-br from-eco-50 to-ocean-50"
+        className="py-20 bg-linear-to-br from-eco-50 to-ocean-50"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -597,186 +735,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Eye className="h-8 w-8 text-eco-400" />
-                <span className="text-xl font-bold">EBA OBSERVA</span>
-              </div>
-              <p className="text-gray-400 text-sm">
-                IoT-based Monitoring System for Ecosystem-Based Adaptation in
-                Rwanda
-              </p>
-              <div className="flex gap-3 mt-4">
-                <a
-                  href="#"
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-eco-600 transition"
-                >
-                  <Twitter size={14} />
-                </a>
-                <a
-                  href="#"
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-eco-600 transition"
-                >
-                  <Linkedin size={14} />
-                </a>
-                <a
-                  href="#"
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-eco-600 transition"
-                >
-                  <Github size={14} />
-                </a>
-                <a
-                  href="#"
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-eco-600 transition"
-                >
-                  <Facebook size={14} />
-                </a>
-                <a
-                  href="#"
-                  className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-eco-600 transition"
-                >
-                  <Youtube size={14} />
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <button
-                    onClick={() =>
-                      document
-                        .getElementById("home")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="hover:text-eco-400 transition"
-                  >
-                    Home
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      document
-                        .getElementById("about")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="hover:text-eco-400 transition"
-                  >
-                    About
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      document
-                        .getElementById("features")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="hover:text-eco-400 transition"
-                  >
-                    Features
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      document
-                        .getElementById("team")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="hover:text-eco-400 transition"
-                  >
-                    Team
-                  </button>
-                </li>
-                <li>
-                  <a
-                    href="/dashboard"
-                    className="hover:text-eco-400 transition"
-                  >
-                    Dashboard
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <a href="/api-docs" className="hover:text-eco-400 transition">
-                    API Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="/blog" className="hover:text-eco-400 transition">
-                    Technical Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="/research" className="hover:text-eco-400 transition">
-                    Research Papers
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com"
-                    className="hover:text-eco-400 transition"
-                  >
-                    GitHub Repository
-                  </a>
-                </li>
-                <li>
-                  <a href="/support" className="hover:text-eco-400 transition">
-                    Support Forum
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="flex items-center gap-2">
-                  <Mail size={14} />
-                  <span>eba-system@ur.ac.rw</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Phone size={14} />
-                  <span>+250 788 123 456</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <MapPin size={14} />
-                  <span>Kigali, Rwanda</span>
-                </li>
-              </ul>
-              <div className="mt-4 pt-4 border-t border-gray-800">
-                <p className="text-xs text-gray-500">
-                  College of Science and Technology
-                  <br />
-                  School of ICT | Department of Information Systems
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-            <p>
-              &copy; {new Date().getFullYear()} EBA System - IoT-Based
-              Environmental Monitoring. All rights reserved.
-            </p>
-            <p className="mt-1">
-              Supervised by Dr. Martin KURADUSENGE | Group 8 | Department of
-              Information Systems
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
