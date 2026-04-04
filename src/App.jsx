@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from "react";
-import {Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 // Components
 import ProtectedRoutes from "./components/ProtectedRoutes";
@@ -18,8 +18,15 @@ import Alerts from "./pages/dashboard/Alerts";
 import Analytics from "./pages/dashboard/Analytics";
 import ControlPanel from "./pages/dashboard/ControlPanel";
 import Settings from "./pages/dashboard/Settings";
-import { ThemeProvider } from "./context/ThemeContext";
 
+// Resource Pages
+import ApiDocs from "./pages/ApiDocs";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost"; // Import the new component
+import Research from "./pages/Research";
+import Support from "./pages/Support";
+
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
@@ -29,6 +36,14 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/verify" element={<VerifyForm />} />
         <Route path="/account-inactive" element={<AccountInactive />} />
+
+        {/* Resource Routes */}
+        <Route path="/api-docs" element={<ApiDocs />} />
+        <Route path="/blog" element={<Blog />} />
+        {/* New Route for individual blog posts */}
+        <Route path="/blog/:id" element={<BlogPost />} /> 
+        <Route path="/research" element={<Research />} />
+        <Route path="/support" element={<Support />} />
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/dashboard" element={<Dashboard />}>
