@@ -1,85 +1,127 @@
 // src/pages/BlogPost.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
-import { Calendar, User, ArrowLeft, Clock } from "lucide-react";
+import { Calendar, User, ArrowLeft, Clock, Tag } from "lucide-react";
+import { useGetBlogBySlugQuery } from "../services/api";
+import { format } from "date-fns";
 
 const BlogPost = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
 
-  // In a real app, you would fetch the post data using the ID from an API
-  // For now, we use mock data based on the ID
-  const mockPost = {
-    1: {
-      title: "Getting Started with IoT-Based Environmental Monitoring",
-      date: "March 15, 2026",
-      author: "Olivier CYUZUZO KWIZERA",
-      category: "Tutorial",
-      readTime: "5 min read",
-      image:
-        "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=1200",
-      content: `
-        <p class="mb-4">Environmental monitoring is crucial for understanding and protecting our ecosystems. With the advent of Internet of Things (IoT) technology, we can now collect real-time data with unprecedented accuracy and frequency.</p>
-        
-        <h2 class="text-2xl font-bold mb-3 mt-6">Why IoT?</h2>
-        <p class="mb-4">Traditional monitoring methods often rely on manual data collection, which is time-consuming and prone to human error. IoT sensors, on the other hand, can automatically collect data 24/7 and transmit it to a central dashboard for analysis.</p>
-        
-        <h2 class="text-2xl font-bold mb-3 mt-6">Setting Up Your First Station</h2>
-        <p class="mb-4">To set up your first environmental monitoring station, you will need:</p>
-        <ul class="list-disc pl-5 mb-4 space-y-2">
-          <li>IoT sensors (temperature, humidity, etc.)</li>
-          <li>A microcontroller (e.g., ESP32, Arduino)</li>
-          <li>A power source (solar panel + battery)</li>
-          <li>An internet connection (Wi-Fi, LoRaWAN, or Cellular)</li>
-        </ul>
-        
-        <h2 class="text-2xl font-bold mb-3 mt-6">Data Visualization</h2>
-        <p class="mb-4">Once your sensors are collecting data, the next step is to visualize it. Our dashboard provides real-time graphs and alerts, allowing you to spot trends and anomalies instantly.</p>
-      `,
-    },
-    2: {
-      title: "Understanding Ecosystem-Based Adaptation in Rwanda",
-      date: "March 10, 2026",
-      author: "Emmanuel NIYONGABO",
-      category: "Research",
-      readTime: "8 min read",
-      image:
-        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200",
-      content: `
-        <p class="mb-4">Ecosystem-based Adaptation (EbA) is a nature-based solution that harnesses biodiversity and ecosystem services to help people adapt to the adverse effects of climate change.</p>
-        <p class="mb-4">In Rwanda, EbA strategies are being implemented in various sectors, including agriculture, water management, and disaster risk reduction.</p>
-      `,
-    },
-    // Add more mock posts as needed
-  };
+  const { data: blogResponse, isLoading, error } = useGetBlogBySlugQuery(slug);
 
-  const post = mockPost[id];
+  // Extract blog from response
+  const post = blogResponse?.data || blogResponse;
 
-  // Handle case where post doesn't exist
-  if (!post) {
+  // If post not found or error
+  if (!isLoading && (error || !post)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Post Not Found</h1>
-          <button
-            onClick={() => navigate("/blog")}
-            className="text-eco-600 hover:text-eco-700 font-medium"
-          >
-            Back to Blog
-          </button>
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="grow pt-20 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Post Not Found
+            </h1>
+            <p className="text-gray-600 mb-6">
+              The blog post you're looking for doesn't exist or has been
+              removed.
+            </p>
+            <button
+              onClick={() => navigate("/blog")}
+              className="px-6 py-2 bg-eco-600 text-white rounded-xl hover:bg-eco-700 transition-colors"
+            >
+              Back to Blog
+            </button>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="grow pt-20 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Function to render markdown-like content (basic formatting)
+  const renderContent = (content) => {
+    if (!content) return "";
+
+    // Split content into paragraphs
+    const paragraphs = content.split("\n\n");
+
+    return paragraphs.map((paragraph, index) => {
+      // Check for headers
+      if (paragraph.startsWith("## ")) {
+        return (
+          <h2
+            key={index}
+            className="text-2xl font-bold mb-4 mt-8 text-gray-900"
+          >
+            {paragraph.substring(3)}
+          </h2>
+        );
+      }
+      if (paragraph.startsWith("### ")) {
+        return (
+          <h3
+            key={index}
+            className="text-xl font-semibold mb-3 mt-6 text-gray-900"
+          >
+            {paragraph.substring(4)}
+          </h3>
+        );
+      }
+
+      // Check for lists
+      if (paragraph.includes("\n- ")) {
+        const lines = paragraph.split("\n");
+        const listItems = lines
+          .filter((line) => line.startsWith("- "))
+          .map((line) => line.substring(2));
+        return (
+          <ul key={index} className="list-disc pl-6 mb-4 space-y-2">
+            {listItems.map((item, i) => (
+              <li key={i} className="text-gray-700">
+                {item}
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
+      // Regular paragraph
+      if (paragraph.trim()) {
+        return (
+          <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+            {paragraph}
+          </p>
+        );
+      }
+
+      return null;
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="grow pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}
-          <div className="mb-8 flex justify-center cursor-pointer" onClick={() => navigate("/")}>
+          <div
+            className="mb-8 flex justify-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <Logo />
           </div>
 
@@ -93,23 +135,40 @@ const BlogPost = () => {
           </button>
 
           {/* Hero Image */}
-          <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-full h-64 md:h-96 object-cover"
-            />
-          </div>
+          {post.featuredImage && (
+            <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
+              <img
+                src={post.featuredImage}
+                alt={post.title}
+                className="w-full h-64 md:h-96 object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=1200";
+                }}
+              />
+            </div>
+          )}
 
           {/* Header */}
           <div className="mb-8">
-            <span className="inline-block px-3 py-1 rounded-full bg-eco-100 text-eco-700 text-xs font-bold mb-4">
-              {post.category}
-            </span>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="inline-block px-3 py-1 rounded-full bg-eco-100 text-eco-700 text-xs font-bold">
+                {post.category || "Uncategorized"}
+              </span>
+              {post.tags &&
+                post.tags.slice(0, 3).map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+            </div>
             <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
               {post.title}
             </h1>
-            
+
             {/* Meta Info */}
             <div className="flex flex-wrap items-center gap-6 text-gray-500 text-sm">
               <div className="flex items-center gap-2">
@@ -118,19 +177,39 @@ const BlogPost = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Calendar size={18} />
-                <span>{post.date}</span>
+                <span>{format(new Date(post.createdAt), "MMMM dd, yyyy")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={18} />
-                <span>{post.readTime}</span>
+                <span>{post.readTime} min read</span>
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <article className="prose prose-lg prose-eco max-w-none text-gray-700 leading-relaxed">
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          <article className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+            {renderContent(post.content)}
           </article>
+
+          {/* Tags Section */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="flex items-center gap-2">
+                <Tag size={18} className="text-gray-400" />
+                <span className="text-sm font-medium text-gray-500">Tags:</span>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="text-sm text-eco-600 bg-eco-50 px-2 py-1 rounded-lg"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <Footer />

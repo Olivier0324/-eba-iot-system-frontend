@@ -18,13 +18,15 @@ import Alerts from "./pages/dashboard/Alerts";
 import Analytics from "./pages/dashboard/Analytics";
 import ControlPanel from "./pages/dashboard/ControlPanel";
 import Settings from "./pages/dashboard/Settings";
-
 // Resource Pages
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost"; // Import the new component
 import Research from "./pages/Research";
 import Support from "./pages/Support";
-
+//admin only routes
+import ContactMessages from "./pages/dashboard/admin/ContactMessages";
+import BlogManagement from "./pages/dashboard/admin/BlogManagement";
+import ResearchManagement from "./pages/dashboard/admin/ResearchManagement";
 import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
@@ -39,7 +41,7 @@ function App() {
         {/* Resource Routes */}
         <Route path="/blog" element={<Blog />} />
         {/* New Route for individual blog posts */}
-        <Route path="/blog/:id" element={<BlogPost />} /> 
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/research" element={<Research />} />
         <Route path="/support" element={<Support />} />
 
@@ -52,6 +54,16 @@ function App() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="control" element={<ControlPanel />} />
             <Route path="settings" element={<Settings />} />
+            {/* Admin Only Routes */}
+            <Route
+              path="/dashboard/admin/messages"
+              element={<ContactMessages />}
+            />
+            <Route path="/dashboard/admin/blog" element={<BlogManagement />} />
+            <Route
+              path="/dashboard/admin/research"
+              element={<ResearchManagement />}
+            />
           </Route>
         </Route>
       </Routes>

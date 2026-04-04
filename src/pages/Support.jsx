@@ -8,60 +8,99 @@ import {
   Clock,
   ExternalLink,
   ChevronDown,
+  Send,
+  CheckCircle,
 } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSubmitContactMessageMutation } from "../services/api";
 
 const Support = () => {
   const navigate = useNavigate();
+  const [submitMessage, { isLoading }] = useSubmitContactMessageMutation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
+    category: "technical",
   });
+  const [submitted, setSubmitted] = useState(false);
 
   const validateForm = () => {
-    let isValid = true;
-
-    // Name validation
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.subject.trim() ||
-      !formData.message.trim()
-    ) {
-      toast.error("All fields are required");
+    if (!formData.name.trim()) {
+      toast.error("Please enter your name");
+      return false;
     }
 
-    // Email validation
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error("Email address is invalid");
-      isValid = false;
+    if (!formData.email.trim()) {
+      toast.error("Please enter your email address");
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return false;
+    }
+
+    if (!formData.subject.trim()) {
+      toast.error("Please enter a subject");
+      return false;
+    }
+
+    if (!formData.message.trim()) {
+      toast.error("Please enter your message");
+      return false;
     }
 
     if (formData.message.trim().length < 10) {
       toast.error("Message must be at least 10 characters long");
-      isValid = false;
+      return false;
     }
-    return isValid;
+
+    return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      // Handle form submission - send to backend or email
-      console.log("Support request:", formData);
+    if (!validateForm()) {
+      return;
+    }
 
-      // Show success toast
+    try {
+      await submitMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        category: formData.category,
+      }).unwrap();
+
+      setSubmitted(true);
       toast.success(
-        "Support request sent! We'll get back to you within 24 hours.",
+        "Message sent successfully! We'll get back to you within 24 hours.",
       );
 
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+          category: "technical",
+        });
+        setSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(
+        error?.data?.message || "Failed to send message. Please try again.",
+      );
     }
   };
 
@@ -92,6 +131,42 @@ const Support = () => {
         "Alert thresholds are pre-configured for each sensor type. For custom thresholds, please contact our support team.",
     },
   ];
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="grow pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div
+              className="mb-8 flex justify-center cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <Logo />
+            </div>
+            <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={32} className="text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Message Sent!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Thank you for reaching out. Our support team will get back to
+                you within 24 hours.
+              </p>
+              <button
+                onClick={() => navigate("/")}
+                className="px-6 py-2 bg-eco-600 text-white rounded-xl hover:bg-eco-700 transition-colors"
+              >
+                Return to Home
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -154,32 +229,40 @@ const Support = () => {
                   Quick Links
                 </h2>
                 <div className="space-y-3">
-                  {[
-                    {
-                      label: "API Documentation",
-                      href: "http://localhost:3000/api-docs/",
-                    },
-                    { label: "Technical Blog", href: "/blog" },
-                    {
-                      label: "GitHub Repository",
-                      href: "https://github.com",
-                      external: true,
-                    },
-                  ].map((link, index) => (
-                    <a
-                      key={index}
-                      href={link.href}
-                      target={link.external ? "_blank" : "_self"}
-                      rel={link.external ? "noopener noreferrer" : undefined}
-                      className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
-                    >
-                      <ExternalLink
-                        size={18}
-                        className="text-gray-400 group-hover:translate-x-1 transition-transform"
-                      />
-                      <span className="font-medium">{link.label}</span>
-                    </a>
-                  ))}
+                  <a
+                    href="http://localhost:3000/api-docs/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                  >
+                    <ExternalLink
+                      size={18}
+                      className="text-gray-400 group-hover:translate-x-1 transition-transform"
+                    />
+                    <span className="font-medium">API Documentation</span>
+                  </a>
+                  <a
+                    href="/blog"
+                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                  >
+                    <ExternalLink
+                      size={18}
+                      className="text-gray-400 group-hover:translate-x-1 transition-transform"
+                    />
+                    <span className="font-medium">Technical Blog</span>
+                  </a>
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                  >
+                    <ExternalLink
+                      size={18}
+                      className="text-gray-400 group-hover:translate-x-1 transition-transform"
+                    />
+                    <span className="font-medium">GitHub Repository</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -223,7 +306,7 @@ const Support = () => {
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
                       <label className="block text-sm font-semibold text-gray-700">
-                        Name
+                        Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -237,7 +320,7 @@ const Support = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="block text-sm font-semibold text-gray-700">
-                        Email
+                        Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -250,39 +333,73 @@ const Support = () => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) =>
-                        setFormData({ ...formData, subject: e.target.value })
-                      }
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none"
-                      placeholder="How can we help?"
-                    />
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Subject <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.subject}
+                        onChange={(e) =>
+                          setFormData({ ...formData, subject: e.target.value })
+                        }
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none"
+                        placeholder="How can we help?"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        Category
+                      </label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) =>
+                          setFormData({ ...formData, category: e.target.value })
+                        }
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none bg-white"
+                      >
+                        <option value="technical">Technical Issue</option>
+                        <option value="account">Account & Billing</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="feedback">General Feedback</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Message
+                      Message <span className="text-red-500">*</span>
                     </label>
                     <textarea
-                      rows={4}
+                      rows={5}
                       value={formData.message}
                       onChange={(e) =>
                         setFormData({ ...formData, message: e.target.value })
                       }
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none resize-y"
-                      placeholder="Tell us more about your issue..."
+                      placeholder="Please describe your issue in detail..."
                     />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Minimum 10 characters
+                    </p>
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-eco-600 text-white py-3 rounded-xl font-bold hover:bg-eco-700 transition-all shadow-md hover:shadow-lg transform active:scale-[0.99]"
+                    disabled={isLoading}
+                    className="w-full bg-eco-600 text-white py-3 rounded-xl font-bold hover:bg-eco-700 transition-all shadow-md hover:shadow-lg transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    Send Message
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Send Message
+                      </>
+                    )}
                   </button>
                 </form>
               </div>

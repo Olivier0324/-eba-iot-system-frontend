@@ -115,32 +115,32 @@ export const api = createApi({
         // ==================== ALERT ENDPOINTS ====================
         getAlerts: builder.query({
             query: (params) => ({
-                url: '/alerts/alerts',
+                url: '/alerts',
                 params,
             }),
             transformResponse: (response) => response.data || response,
             providesTags: ['Alert'],
         }),
         getActiveAlerts: builder.query({
-            query: () => '/alerts/alerts/active',
+            query: () => '/alerts/active',
             transformResponse: (response) => response.data || response,
             providesTags: ['Alert'],
         }),
         getAlertById: builder.query({
-            query: (id) => `/alerts/alerts/${id}`,
+            query: (id) => `/alerts/${id}`,
             transformResponse: (response) => response.data || response,
             providesTags: ['Alert'],
         }),
         resolveAlert: builder.mutation({
             query: (id) => ({
-                url: `/alerts/alerts/${id}/resolve`,
+                url: `/alerts/${id}/resolve`,
                 method: 'PUT',
             }),
             invalidatesTags: ['Alert'],
         }),
         acknowledgeAlert: builder.mutation({
             query: (id) => ({
-                url: `/alerts/alerts/${id}/acknowledge`,
+                url: `/alerts/${id}/acknowledge`,
                 method: 'PUT',
             }),
             invalidatesTags: ['Alert'],
@@ -331,19 +331,19 @@ export const api = createApi({
                 url: '/contact',
                 params,
             }),
-            transformResponse: (response) => response.data || response,
             providesTags: ['Contact'],
         }),
+
         getContactMessageStats: builder.query({
             query: () => '/contact/stats',
-            transformResponse: (response) => response.data || response,
             providesTags: ['Contact'],
         }),
+
         getContactMessageById: builder.query({
             query: (id) => `/contact/${id}`,
-            transformResponse: (response) => response.data || response,
             providesTags: ['Contact'],
         }),
+
         replyToContactMessage: builder.mutation({
             query: ({ id, ...data }) => ({
                 url: `/contact/${id}/reply`,
@@ -352,6 +352,7 @@ export const api = createApi({
             }),
             invalidatesTags: ['Contact'],
         }),
+
         resolveContactMessage: builder.mutation({
             query: (id) => ({
                 url: `/contact/${id}/resolve`,
@@ -359,6 +360,7 @@ export const api = createApi({
             }),
             invalidatesTags: ['Contact'],
         }),
+
         deleteContactMessage: builder.mutation({
             query: (id) => ({
                 url: `/contact/${id}`,
@@ -444,7 +446,7 @@ export const {
     useDeleteResearchPaperMutation,
 } = api;
 
-// Contact Message hooks
+// ==================== CONTACT MESSAGE HOOKS ====================
 export const {
     useSubmitContactMessageMutation,
     useGetAllContactMessagesQuery,

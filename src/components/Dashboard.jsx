@@ -16,7 +16,6 @@ import {
   FileText,
   BarChart3,
   Bell,
-  Search,
   Eye,
   Activity,
   Droplets,
@@ -24,6 +23,11 @@ import {
   Wind,
   Database,
   AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  MessageSquare,
+  BookOpen,
+  GraduationCap,
 } from "lucide-react";
 
 function Dashboard() {
@@ -33,21 +37,22 @@ function Dashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [latestSensorData, setLatestSensorData] = useState(null);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
+  
 
-
-  // Fetch latest sensor data - using getAllSensorDataQuery instead
+  // Fetch latest sensor data
   const { data: sensorData } = useGetAllSensorDataQuery();
 
   // Update latest sensor data when fetched
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData) && sensorData.length > 0) {
-      setLatestSensorData(sensorData[0]); // Get the most recent reading
+      setLatestSensorData(sensorData[0]);
     }
   }, [sensorData]);
 
@@ -57,17 +62,14 @@ function Dashboard() {
       try {
         const socket = connectSocket(token);
 
-        // Join user room
         if (user?.id) {
           socket.emit("join-user", user.id);
         }
 
-        // Listen for sensor data
         socket.on("sensor-data", (data) => {
           console.log("New sensor data:", data);
           setLatestSensorData(data);
 
-          // Add to notifications if threshold exceeded
           if (data.temperature > 35 || data.co2_ppm > 1000) {
             const newNotification = {
               id: Date.now(),
@@ -83,7 +85,6 @@ function Dashboard() {
           }
         });
 
-        // Listen for new alerts
         socket.on("new-alerts", (alerts) => {
           alerts.forEach((alert) => {
             const newNotification = {
@@ -100,7 +101,6 @@ function Dashboard() {
           });
         });
 
-        // Listen for device status
         socket.on("device-status", (status) => {
           console.log("Device status:", status);
         });
@@ -117,7 +117,6 @@ function Dashboard() {
     }
   }, [token, user?.id]);
 
-  // Close mobile sidebar when route changes
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [location]);
@@ -144,7 +143,7 @@ function Dashboard() {
 
   const markNotificationAsRead = (id) => {
     setNotifications((prev) =>
-      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)),
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   };
@@ -153,6 +152,8 @@ function Dashboard() {
     setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
     setUnreadCount(0);
   };
+
+  const isAdmin = user?.role === "admin";
 
   // Navigation items
   const navItems = [
@@ -165,9 +166,24 @@ function Dashboard() {
     { name: "Settings", path: "/dashboard/settings", icon: Settings },
   ];
 
-  // Get current page title
+  // Admin section items
+  const adminItems = [
+    {
+      name: "Contact Messages",
+      path: "/dashboard/admin/messages",
+      icon: MessageSquare,
+    },
+    { name: "Blog Management", path: "/dashboard/admin/blog", icon: BookOpen },
+    {
+      name: "Research Papers",
+      path: "/dashboard/admin/research",
+      icon: GraduationCap,
+    },
+  ];
+
   const currentPage =
     navItems.find((item) => item.path === location.pathname)?.name ||
+    adminItems.find((item) => item.path === location.pathname)?.name ||
     "Overview";
 
   return (
@@ -272,43 +288,54 @@ function Dashboard() {
                   </Link>
                 </li>
               ))}
+
+              {/* Admin Dropdown Menu - Only visible to admin/manager */}
+              {isAdmin && (
+                <li className="mt-2">
+                  <button
+                    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
+                      adminItems.some((item) => location.pathname === item.path)
+                        ? "bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 border-r-2 border-eco-500"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-5 h-5 mr-3 rounded-full bg-eco-100 dark:bg-eco-900/30 flex items-center justify-center">
+                        <span className="text-xs text-eco-600">👑</span>
+                      </div>
+                      <span className="font-medium">Admin Panel</span>
+                    </div>
+                    {adminMenuOpen ? (
+                      <ChevronDown size={18} />
+                    ) : (
+                      <ChevronRight size={18} />
+                    )}
+                  </button>
+
+                  {adminMenuOpen && (
+                    <ul className="ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800">
+                      {adminItems.map((item) => (
+                        <li key={item.path}>
+                          <Link
+                            to={item.path}
+                            className={`flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                              location.pathname === item.path
+                                ? "text-eco-600 dark:text-eco-400 bg-eco-50 dark:bg-eco-900/20"
+                                : "text-gray-600 dark:text-gray-400 hover:text-eco-600 dark:hover:text-eco-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            }`}
+                          >
+                            <item.icon size={16} className="mr-3" />
+                            <span className="text-sm">{item.name}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              )}
             </ul>
           </nav>
-
-          {/* Live Sensor Status */}
-          {latestSensorData && (
-            <div className="p-4 mx-4 mb-4 rounded-xl bg-linear-to-br from-eco-500/10 to-ocean-500/10 border border-eco-200 dark:border-eco-800">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                LIVE DATA
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-1">
-                  <Thermometer size={12} className="text-eco-500" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {latestSensorData.temperature}°C
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Droplets size={12} className="text-ocean-500" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {latestSensorData.humidity}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Wind size={12} className="text-teal-500" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {latestSensorData.co2_ppm}ppm
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Activity size={12} className="text-alert-500" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    Online
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Logout Button */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -370,7 +397,7 @@ function Dashboard() {
           <div className="flex items-center">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="mr-4 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors md:hidden"
+              className="mr-4 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors"
             >
               <Menu size={20} />
             </button>
@@ -379,16 +406,6 @@ function Dashboard() {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            {/* Search */}
-            <div className="relative hidden lg:block">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-80 pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent"
-              />
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            </div>
-
             {/* Notifications */}
             <div className="relative">
               <button
