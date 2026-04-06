@@ -115,7 +115,7 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <Link to="/api-docs" className="hover:text-eco-400 transition">
+                <Link to={import.meta.env.VITE_BACKEND_URL + "/api-docs"} className="hover:text-eco-400 transition">
                   API Documentation
                 </Link>
               </li>

@@ -61,10 +61,11 @@ const Navbar = () => {
     {
       name: "API Documentation",
       icon: Code,
-      href: "http://localhost:3000/api-docs/",
+      href: import.meta.env.VITE_BACKEND_URL + "/api-docs/",
     },
     { name: "Technical Blog", icon: BookMarked, href: "/blog" },
-    { name: "GitHub Repository", icon: Code, href: "https://github.com" },
+    { name: "Research Papers", icon: FileText, href: "/research" },
+    { name: "GitHub Repository", icon: Code, href: "https://github.com/oliver0324/" },
     { name: "Support Forum", icon: HelpCircle, href: "/support" },
   ];
 
