@@ -11,6 +11,7 @@ export const api = createApi({
             const token = getState().auth.token;
             if (token) {
                 headers.set('authorization', `Bearer ${token}`);
+                console.log("token added to headers:", token); 
             }
             return headers;
         },
@@ -254,64 +255,6 @@ export const api = createApi({
                 method: 'DELETE',
             }),
             invalidatesTags: ['Blog'],
-        }),
-
-        // ==================== RESEARCH PAPER ENDPOINTS ====================
-        // Public research endpoints
-        getAllResearchPapers: builder.query({
-            query: (params) => ({
-                url: '/research',
-                params,
-            }),
-            transformResponse: (response) => response.data || response,
-            providesTags: ['Research'],
-        }),
-        getResearchPaperBySlug: builder.query({
-            query: (slug) => `/research/${slug}`,
-            transformResponse: (response) => response.data || response,
-            providesTags: ['Research'],
-        }),
-        getResearchCategories: builder.query({
-            query: () => '/research/categories',
-            transformResponse: (response) => response.data || response,
-            providesTags: ['Research'],
-        }),
-        incrementResearchDownload: builder.mutation({
-            query: (id) => ({
-                url: `/research/${id}/download`,
-                method: 'POST',
-            }),
-            invalidatesTags: ['Research'],
-        }),
-
-        // Admin research endpoints
-        createResearchPaper: builder.mutation({
-            query: (data) => ({
-                url: '/research',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Research'],
-        }),
-        getResearchPaperById: builder.query({
-            query: (id) => `/research/admin/${id}`,
-            transformResponse: (response) => response.data || response,
-            providesTags: ['Research'],
-        }),
-        updateResearchPaper: builder.mutation({
-            query: ({ id, ...data }) => ({
-                url: `/research/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['Research'],
-        }),
-        deleteResearchPaper: builder.mutation({
-            query: (id) => ({
-                url: `/research/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Research'],
         }),
         // ==================== USER MANAGEMENT ENDPOINTS ====================
         getAllUsers: builder.query({

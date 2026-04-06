@@ -226,11 +226,11 @@ const Support = () => {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Email Us</p>
-                      <p className="font-medium">eba-system@ur.ac.rw</p>
+                      <p className="font-medium">{import.meta.env.VITE_APP_EMAIL}</p>
                     </div>
                   </a>
                   <a
-                    href="tel:+250788123456"
+                    href={ "tel:" +import.meta.env.VITE_APP_CONTACT }
                     className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-3 rounded-xl hover:bg-gray-50 group"
                   >
                     <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-eco-100 transition-colors">
@@ -241,7 +241,7 @@ const Support = () => {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Call Us</p>
-                      <p className="font-medium">+250 788 123 456</p>
+                      <p className="font-medium">{ import.meta.env.VITE_APP_CONTACT}</p>
                     </div>
                   </a>
                   <div className="flex items-center gap-3 text-gray-600 p-3 rounded-xl bg-gray-50">

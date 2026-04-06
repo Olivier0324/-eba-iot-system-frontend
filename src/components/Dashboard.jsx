@@ -26,8 +26,8 @@ import {
   ChevronDown,
   ChevronRight,
   MessageSquare,
-  BookOpen,
-  GraduationCap, Users,
+  BookOpen, Users,MoreVertical,
+  MoreHorizontal
 } from "lucide-react";
 
 function Dashboard() {
@@ -296,10 +296,10 @@ function Dashboard() {
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="w-5 h-5 mr-3 rounded-full bg-eco-100 dark:bg-eco-900/30 flex items-center justify-center">
-                        <span className="text-xs text-eco-600">👑</span>
-                      </div>
-                      <span className="font-medium">Admin Panel</span>
+                      <span className="font-medium flex justify-between items-center gap-2.5">
+                        <span>More</span>
+                        <MoreHorizontal />
+                      </span>
                     </div>
                     {adminMenuOpen ? (
                       <ChevronDown size={18} />

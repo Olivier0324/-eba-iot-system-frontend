@@ -147,15 +147,15 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-center gap-2">
                 <Mail size={14} />
-                <span>eba-system@ur.ac.rw</span>
+                <span>{import.meta.env.VITE_APP_EMAIL}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={14} />
-                <span>+250 788 123 456</span>
+                <span>{import.meta.env.VITE_APP_CONTACT}</span>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin size={14} />
-                <span>Kigali, Rwanda</span>
+                <span>{import.meta.env.VITE_APP_LOCATION}</span>
               </li>
             </ul>
             <div className="mt-4 pt-4 border-t border-gray-800">
