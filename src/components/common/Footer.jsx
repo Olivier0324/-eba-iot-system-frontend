@@ -125,11 +125,6 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/research" className="hover:text-eco-400 transition">
-                  Research Papers
-                </Link>
-              </li>
-              <li>
                 <a
                   href="https://github.com"
                   target="_blank"

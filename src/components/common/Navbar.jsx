@@ -64,7 +64,6 @@ const Navbar = () => {
       href: "http://localhost:3000/api-docs/",
     },
     { name: "Technical Blog", icon: BookMarked, href: "/blog" },
-    { name: "Research Papers", icon: FileText, href: "/research" },
     { name: "GitHub Repository", icon: Code, href: "https://github.com" },
     { name: "Support Forum", icon: HelpCircle, href: "/support" },
   ];

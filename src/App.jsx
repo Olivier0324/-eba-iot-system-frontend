@@ -21,12 +21,11 @@ import Settings from "./pages/dashboard/Settings";
 // Resource Pages
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost"; // Import the new component
-import Research from "./pages/Research";
 import Support from "./pages/Support";
 //admin only routes
 import ContactMessages from "./pages/dashboard/admin/ContactMessages";
 import BlogManagement from "./pages/dashboard/admin/BlogManagement";
-import ResearchManagement from "./pages/dashboard/admin/ResearchManagement";
+import UserManagement from "./pages/dashboard/admin/UserManagement";
 import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
@@ -42,7 +41,6 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         {/* New Route for individual blog posts */}
         <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/research" element={<Research />} />
         <Route path="/support" element={<Support />} />
 
         <Route element={<ProtectedRoutes />}>
@@ -60,10 +58,7 @@ function App() {
               element={<ContactMessages />}
             />
             <Route path="/dashboard/admin/blog" element={<BlogManagement />} />
-            <Route
-              path="/dashboard/admin/research"
-              element={<ResearchManagement />}
-            />
+            <Route path="/dashboard/admin/users" element={<UserManagement />} />
           </Route>
         </Route>
       </Routes>

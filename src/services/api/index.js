@@ -313,6 +313,61 @@ export const api = createApi({
             }),
             invalidatesTags: ['Research'],
         }),
+        // ==================== USER MANAGEMENT ENDPOINTS ====================
+        getAllUsers: builder.query({
+            query: (params) => ({
+                url: '/users',
+                params,
+            }),
+            providesTags: ['User'],
+        }),
+        getUserById: builder.query({
+            query: (id) => `/users/${id}`,
+            providesTags: ['User'],
+        }),
+        createUser: builder.mutation({
+            query: (data) => ({
+                url: '/users',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['User'],
+        }),
+        updateUser: builder.mutation({
+            query: ({ id, ...data }) => ({
+                url: `/users/${id}`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['User'],
+        }),
+        deleteUser: builder.mutation({
+            query: (id) => ({
+                url: `/users/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['User'],
+        }),
+        toggleUserStatus: builder.mutation({
+            query: ({ id, isActive }) => ({
+                url: `/users/${id}/activate`,
+                method: 'PUT',
+                body: { isActive },
+            }),
+            invalidatesTags: ['User'],
+        }),
+        changeUserRole: builder.mutation({
+            query: ({ id, role }) => ({
+                url: `/users/${id}/role`,
+                method: 'PUT',
+                body: { role },
+            }),
+            invalidatesTags: ['User'],
+        }),
+        getUserStats: builder.query({
+            query: () => '/users/stats',
+            providesTags: ['User'],
+        }),
 
         // ==================== CONTACT MESSAGE ENDPOINTS ====================
         // Public contact endpoint
@@ -455,4 +510,15 @@ export const {
     useReplyToContactMessageMutation,
     useResolveContactMessageMutation,
     useDeleteContactMessageMutation,
+} = api;
+// Add to hooks exports:
+export const {
+    useGetAllUsersQuery,
+    useGetUserByIdQuery,
+    useCreateUserMutation,
+    useUpdateUserMutation,
+    useDeleteUserMutation,
+    useToggleUserStatusMutation,
+    useChangeUserRoleMutation,
+    useGetUserStatsQuery,
 } = api;

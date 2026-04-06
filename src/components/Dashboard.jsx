@@ -27,7 +27,7 @@ import {
   ChevronRight,
   MessageSquare,
   BookOpen,
-  GraduationCap,
+  GraduationCap, Users,
 } from "lucide-react";
 
 function Dashboard() {
@@ -44,7 +44,6 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
-  
 
   // Fetch latest sensor data
   const { data: sensorData } = useGetAllSensorDataQuery();
@@ -166,7 +165,7 @@ function Dashboard() {
     { name: "Settings", path: "/dashboard/settings", icon: Settings },
   ];
 
-  // Admin section items
+  // In Dashboard.jsx, update the adminItems array:
   const adminItems = [
     {
       name: "Contact Messages",
@@ -174,11 +173,7 @@ function Dashboard() {
       icon: MessageSquare,
     },
     { name: "Blog Management", path: "/dashboard/admin/blog", icon: BookOpen },
-    {
-      name: "Research Papers",
-      path: "/dashboard/admin/research",
-      icon: GraduationCap,
-    },
+    { name: "User Management", path: "/dashboard/admin/users", icon: Users }, // Add this line
   ];
 
   const currentPage =
