@@ -58,7 +58,6 @@ function ControlPanel() {
       );
       refetch();
     } catch (error) {
-      console.error("Set interval error:", error);
       toast.error(
         error?.data?.message || error?.message || "Failed to set interval",
       );
@@ -204,7 +203,9 @@ function ControlPanel() {
               ? `${deviceStatus.co2_ppm} ppm`
               : "--"}
           </p>
-          <p className="text-xs text-gray-500 mt-1">CO₂ Level</p>
+          <p className="text-xs text-gray-500 mt-1">
+            CO<sub>2</sub> level
+          </p>
         </div>
       </div>
 

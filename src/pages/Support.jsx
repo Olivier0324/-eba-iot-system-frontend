@@ -98,7 +98,6 @@ const Support = () => {
         setSubmitted(false);
       }, 3000);
     } catch (error) {
-      console.error("Error sending message:", error);
       toast.error(
         error?.data?.message || "Failed to send message. Please try again.",
       );

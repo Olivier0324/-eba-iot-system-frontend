@@ -66,14 +66,13 @@ function Dashboard() {
         }
 
         socket.on("sensor-data", (data) => {
-          console.log("New sensor data:", data);
           setLatestSensorData(data);
 
           if (data.temperature > 35 || data.co2_ppm > 1000) {
             const newNotification = {
               id: Date.now(),
               title: "Alert: Threshold Exceeded",
-              message: `${data.temperature > 35 ? `Temperature at ${data.temperature}°C` : ""} ${data.co2_ppm > 1000 ? `CO₂ at ${data.co2_ppm}ppm` : ""}`,
+              message: `${data.temperature > 35 ? `Temperature at ${data.temperature}°C` : ""} ${data.co2_ppm > 1000 ? `CO\u2082 at ${data.co2_ppm} ppm` : ""}`,
               type: "warning",
               read: false,
               timestamp: new Date(),
@@ -100,18 +99,13 @@ function Dashboard() {
           });
         });
 
-        socket.on("device-status", (status) => {
-          console.log("Device status:", status);
-        });
-
         return () => {
           socket.off("sensor-data");
           socket.off("new-alerts");
-          socket.off("device-status");
           disconnectSocket();
         };
-      } catch (error) {
-        console.error("Socket connection error:", error);
+      } catch {
+        // Socket setup failed; notifications will resume on next successful connection.
       }
     }
   }, [token, user?.id]);
@@ -128,7 +122,6 @@ function Dashboard() {
       toast.success("You have been logged out successfully");
       navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
       dispatch(logout());
       disconnectSocket();
       const errorMessage =

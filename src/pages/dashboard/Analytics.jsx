@@ -1,6 +1,6 @@
 // src/pages/dashboard/Analytics.jsx
 import React, { useState, useEffect } from "react";
-import { Line, Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -9,15 +9,12 @@ import {
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
 import {
-  TrendingUp,
-  TrendingDown,
   Activity,
   Sprout,
   Waves,
@@ -28,18 +25,18 @@ import {
 } from "lucide-react";
 import {
   useGetAllSensorDataQuery,
-  useGetSensorStatsQuery,
   useGetAlertStatisticsQuery,
 } from "../../services/api";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
+
+const CO2_CHART_LABEL = "CO\u2082 (ppm)";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -225,28 +222,36 @@ function Analytics() {
 
   const statsCards = [
     {
-      name: "Avg Temperature",
+      id: "avg-temp",
+      label: "Avg Temperature",
       value: calculatedStats.avgTemp || "--",
       unit: "°C",
       icon: Thermometer,
       color: "text-red-500",
     },
     {
-      name: "Avg Humidity",
+      id: "avg-humidity",
+      label: "Avg Humidity",
       value: calculatedStats.avgHumidity || "--",
       unit: "%",
       icon: Droplets,
       color: "text-blue-500",
     },
     {
-      name: "Max CO₂",
+      id: "max-co2",
+      label: (
+        <>
+          Max CO<sub>2</sub>
+        </>
+      ),
       value: calculatedStats.maxCO2 || "--",
       unit: "ppm",
       icon: Wind,
       color: "text-teal-500",
     },
     {
-      name: "Avg Soil Moisture",
+      id: "avg-soil",
+      label: "Avg Soil Moisture",
       value: formatDisplayValue(
         calculatedStats.avgSoil,
         calculatedStats.hasSoilData,
@@ -256,7 +261,8 @@ function Analytics() {
       color: "text-yellow-600",
     },
     {
-      name: "Avg Water Level",
+      id: "avg-water",
+      label: "Avg Water Level",
       value: formatDisplayValue(
         calculatedStats.avgWater,
         calculatedStats.hasWaterData,
@@ -266,7 +272,8 @@ function Analytics() {
       color: "text-blue-600",
     },
     {
-      name: "Active Alerts",
+      id: "active-alerts",
+      label: "Active Alerts",
       value: alertStats?.activeAlerts || 0,
       unit: "",
       icon: Activity,
@@ -291,7 +298,7 @@ function Analytics() {
               label += `: ${value.toFixed(1)}`;
               if (context.dataset.label.includes("Temperature")) label += "°C";
               if (context.dataset.label.includes("Humidity")) label += "%";
-              if (context.dataset.label.includes("CO₂")) label += " ppm";
+              if (context.dataset.label.includes("\u2082")) label += " ppm";
               if (context.dataset.label.includes("Soil")) label += "%";
               if (context.dataset.label.includes("Water")) label += "%";
             } else {
@@ -319,7 +326,7 @@ function Analytics() {
     labels: chartData1.labels,
     datasets: [
       {
-        label: "CO₂ (ppm)",
+        label: CO2_CHART_LABEL,
         data: chartData1.labels.map((_, idx) => {
           const step = Math.max(
             1,
@@ -342,7 +349,7 @@ function Analytics() {
       ...chartOptions.scales,
       y: {
         ...chartOptions.scales.y,
-        title: { display: true, text: "CO₂ (ppm)", font: { size: 10 } },
+        title: { display: true, text: CO2_CHART_LABEL, font: { size: 10 } },
       },
     },
   };
@@ -363,8 +370,12 @@ function Analytics() {
   if (sensorLoading && filteredData.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600 mx-auto mb-4"></div>
-        <p className="text-gray-500">Loading analytics data...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">
+            Loading analytics data...
+          </p>
+        </div>
       </div>
     );
   }
@@ -421,13 +432,13 @@ function Analytics() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statsCards.map((stat) => (
           <div
-            key={stat.name}
+            key={stat.id}
             className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700"
           >
             <div className="flex items-center gap-2 mb-2">
               <stat.icon size={18} className={stat.color} />
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {stat.name}
+                {stat.label}
               </p>
             </div>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
@@ -466,7 +477,7 @@ function Analytics() {
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          CO₂ Levels (ppm)
+          CO<sub>2</sub> levels (ppm)
         </h2>
         <div className="h-80">
           <Line data={co2ChartData} options={co2Options} />
@@ -491,7 +502,7 @@ function Analytics() {
                   Humidity
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                  CO₂
+                  CO<sub>2</sub>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Soil
@@ -510,16 +521,28 @@ function Analytics() {
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
                   </td>
-                  <td className="px-4 py-3 text-sm">{reading.temperature}°C</td>
-                  <td className="px-4 py-3 text-sm">{reading.humidity}%</td>
-                  <td className="px-4 py-3 text-sm">{reading.co2_ppm} ppm</td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.temperature != null && !Number.isNaN(reading.temperature)
+                      ? `${Number(reading.temperature).toFixed(1)}°C`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.humidity != null && !Number.isNaN(reading.humidity)
+                      ? `${Number(reading.humidity).toFixed(1)}%`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.co2_ppm != null && !Number.isNaN(reading.co2_ppm)
+                      ? `${reading.co2_ppm} ppm`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {reading.soil_moisture_percent !== undefined &&
                     reading.soil_moisture_percent !== null
                       ? `${reading.soil_moisture_percent}%`
                       : "N/A"}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {reading.water_level_percent !== undefined &&
                     reading.water_level_percent !== null
                       ? `${reading.water_level_percent}%`

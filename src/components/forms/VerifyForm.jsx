@@ -19,7 +19,6 @@ function VerifyForm() {
   const inputRefs = useRef([]);
 
   useEffect(() => {
-    console.log("Current email from Redux:", email);
     if (!email) {
       navigate("/login");
     }
@@ -71,29 +70,16 @@ function VerifyForm() {
 
     try {
       const otpValue = otp.join("");
-      console.log("Verifying OTP for email:", email);
-      console.log("OTP value:", otpValue);
 
       const response = await verifyOTP({ email, otp: otpValue }).unwrap();
-
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
-      console.log("Token:", response.data?.token);
-      console.log("User:", response.data?.user);
 
       // Store token and user in Redux and localStorage
       if (response.data?.token) {
         dispatch(setToken({ token: response.data.token }));
-        console.log("Token dispatched to Redux");
-      } else {
-        console.error("No token in response:", response);
       }
 
       if (response.data?.user) {
         dispatch(setUser({ user: response.data.user }));
-        console.log("User dispatched to Redux");
-      } else {
-        console.error("No user in response:", response);
       }
 
       toast.success(response.message || "Verification successful!");
@@ -103,8 +89,6 @@ function VerifyForm() {
         navigate("/dashboard");
       }, 100);
     } catch (error) {
-      console.error("Verification error:", error);
-      console.error("Error details:", error.data);
       const errorMessage =
         error.data?.message ||
         error.message ||
@@ -116,7 +100,6 @@ function VerifyForm() {
   const handleResendOTP = async () => {
     try {
       const response = await resendOTP({ email }).unwrap();
-      console.log("Resend OTP response:", response);
       toast.success(response.message || "New OTP sent successfully!");
       setOtp(["", "", "", "", "", ""]);
 
@@ -126,7 +109,6 @@ function VerifyForm() {
         }
       }, 0);
     } catch (error) {
-      console.error("Resend OTP error:", error);
       const errorMessage =
         error.data?.message ||
         error.message ||

@@ -26,8 +26,6 @@ function AccountInactive() {
       // Navigate to login page
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
-      
       // Even if server logout fails, clear local state
       dispatch(logout());
       

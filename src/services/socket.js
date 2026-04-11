@@ -20,25 +20,10 @@ export const connectSocket = (token) => {
         timeout: 20000,
     });
 
-    socket.on('connect', () => {
-        console.log('✅ Socket connected');
-    });
-
-    socket.on('disconnect', (reason) => {
-        console.log('❌ Socket disconnected:', reason);
-    });
-
-    socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error.message);
-    });
-
     return socket;
 };
 
 export const getSocket = () => {
-    if (!socket) {
-        console.warn('Socket not connected. Call connectSocket first.');
-    }
     return socket;
 };
 
@@ -46,6 +31,5 @@ export const disconnectSocket = () => {
     if (socket) {
         socket.disconnect();
         socket = null;
-        console.log('Socket disconnected manually');
     }
 };

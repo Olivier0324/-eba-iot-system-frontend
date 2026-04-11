@@ -53,7 +53,6 @@ const ContactMessages = () => {
       setTotalItems(result?.pagination?.totalItems || 0);
       setError(null);
     } catch (err) {
-      console.error("Fetch error:", err);
       setError(err);
     } finally {
       setIsLoading(false);
@@ -67,8 +66,8 @@ const ContactMessages = () => {
         api.endpoints.getContactMessageStats.initiate(),
       ).unwrap();
       setStats(result?.data || result || {});
-    } catch (err) {
-      console.error("Stats error:", err);
+    } catch {
+      // Stats are optional; list fetch still drives the UI.
     }
   };
 
@@ -105,7 +104,6 @@ const ContactMessages = () => {
       fetchMessages();
       fetchStats();
     } catch (error) {
-      console.error("Reply error:", error);
       toast.error(error?.data?.message || "Failed to send reply");
     }
   };
@@ -117,7 +115,6 @@ const ContactMessages = () => {
       fetchMessages();
       fetchStats();
     } catch (error) {
-      console.error("Resolve error:", error);
       toast.error(error?.data?.message || "Failed to resolve message");
     }
   };
@@ -132,7 +129,6 @@ const ContactMessages = () => {
         fetchMessages();
         fetchStats();
       } catch (error) {
-        console.error("Delete error:", error);
         toast.error(error?.data?.message || "Failed to delete message");
       }
     }

@@ -61,15 +61,11 @@ const BlogManagement = () => {
   const totalItems = blogsResponse?.pagination?.totalItems || blogs.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Debug logging
   useEffect(() => {
-    console.log("Blogs Response:", blogsResponse);
-    console.log("Extracted Blogs:", blogs);
     if (error) {
-      console.error("Blogs Error:", error);
       toast.error("Failed to load blogs. Please refresh.");
     }
-  }, [blogsResponse, error]);
+  }, [error]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -134,7 +130,6 @@ const BlogManagement = () => {
       });
       refetch();
     } catch (error) {
-      console.error("Save error:", error);
       toast.error(error?.data?.message || "Failed to save blog");
     }
   };
@@ -146,7 +141,6 @@ const BlogManagement = () => {
         toast.success("Blog deleted");
         refetch();
       } catch (error) {
-        console.error("Delete error:", error);
         toast.error(error?.data?.message || "Failed to delete blog");
       }
     }

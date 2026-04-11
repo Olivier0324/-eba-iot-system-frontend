@@ -296,7 +296,9 @@ const LandingPage = () => {
                         ? `${liveData.co2_ppm} ppm`
                         : "--"}
                     </div>
-                    <div className="text-xs text-gray-500">CO₂</div>
+                    <div className="text-xs text-gray-500">
+                      CO<sub>2</sub>
+                    </div>
                   </div>
 
                   {/* Soil Moisture */}

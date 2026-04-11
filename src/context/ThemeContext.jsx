@@ -10,8 +10,7 @@ export const ThemeProvider = ({ children }) => {
     try {
       const savedTheme = localStorage.getItem('theme');
       return savedTheme || 'light'; // Default to light if not set
-    } catch (error) {
-      console.error('Error reading theme from localStorage:', error);
+    } catch {
       return 'light';
     }
   };

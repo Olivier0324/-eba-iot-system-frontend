@@ -1,5 +1,5 @@
 // src/pages/Blog.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
@@ -21,14 +21,6 @@ const Blog = () => {
     limit: 100,
   });
 
-  // Debug: Log the actual response structure
-  useEffect(() => {
-    console.log("Full API Response:", blogsResponse);
-    console.log("blogsResponse?.data:", blogsResponse?.data);
-    console.log("Type of data:", typeof blogsResponse?.data);
-    console.log("Is array?", Array.isArray(blogsResponse?.data));
-  }, [blogsResponse]);
-
   // Extract blogs from response - handle different possible structures
   let allBlogs = [];
   if (blogsResponse?.data && Array.isArray(blogsResponse.data)) {
@@ -44,11 +36,6 @@ const Blog = () => {
 
   // Filter only published posts
   const publishedBlogs = allBlogs.filter((blog) => blog.published === true);
-
-  // Debug: Log the filtered results
-  console.log("All blogs:", allBlogs.length);
-  console.log("Published blogs:", publishedBlogs.length);
-  console.log("Published blogs data:", publishedBlogs);
 
   // Get unique categories from published blogs
   const categories = [

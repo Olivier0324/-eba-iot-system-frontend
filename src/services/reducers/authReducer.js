@@ -14,17 +14,14 @@ export const authSlice = createSlice({
         setEmail: (state, action) => {
             state.email = action.payload.email;
             localStorage.setItem("email", state.email);
-            console.log("Email saved:", state.email);
         },
         setToken: (state, action) => {
             state.token = action.payload.token;
             localStorage.setItem("token", state.token);
-            console.log("Token saved:", state.token);
         },
         setUser: (state, action) => {
             state.user = action.payload.user;
             localStorage.setItem("user", JSON.stringify(state.user));
-            console.log("User saved:", state.user);
         },
         logout: (state) => {
             state.user = null;
@@ -33,7 +30,6 @@ export const authSlice = createSlice({
             localStorage.removeItem("user");
             localStorage.removeItem("token");
             localStorage.removeItem("email");
-            console.log("Logged out, storage cleared");
         },
     },
 });

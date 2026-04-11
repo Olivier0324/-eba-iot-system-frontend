@@ -1,5 +1,15 @@
 // src/pages/dashboard/Sensors.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+
+/** Chart.js label (canvas text); Unicode subscript ₂ renders reliably. */
+const CO2_CHART_LABEL = "CO\u2082 (ppm)";
+
+function escapeCsvCell(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -42,22 +52,17 @@ function Sensors() {
   const [sensorReadings, setSensorReadings] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
-      // Filter out entries that have missing temperature, humidity, or co2_ppm
-      // These are incomplete sensor readings (only device_id and interval_ms)
-      const validData = sensorData.filter(
-        (item) =>
-          item.temperature !== undefined &&
-          item.temperature !== null &&
-          item.humidity !== undefined &&
-          item.humidity !== null &&
-          item.co2_ppm !== undefined &&
-          item.co2_ppm !== null
+      // Keep every API row (export + table); sort oldest → newest for stable CSV/charts.
+      const sorted = [...sensorData].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
       );
-      setSensorReadings(validData);
+      setSensorReadings(sorted);
+    } else {
+      setSensorReadings([]);
     }
   }, [sensorData]);
 
@@ -80,7 +85,7 @@ function Sensors() {
       color: "#2E6B9E",
       icon: Droplets,
     },
-    { key: "co2_ppm", label: "CO₂ (ppm)", color: "#20B2AA", icon: Wind },
+    { key: "co2_ppm", label: CO2_CHART_LABEL, color: "#20B2AA", icon: Wind },
     {
       key: "soil_moisture_percent",
       label: "Soil Moisture (%)",
@@ -95,8 +100,10 @@ function Sensors() {
     },
   ];
 
-  // Use only valid readings for chart
-  const validForChart = sensorReadings.slice(0, 100);
+  const validForChart = useMemo(
+    () => sensorReadings.slice(-100),
+    [sensorReadings],
+  );
   const labels = validForChart.map((d) =>
     format(new Date(d.timestamp), "MM/dd HH:mm")
   );
@@ -143,7 +150,7 @@ function Sensors() {
               label += `: ${value.toFixed(1)}`;
               if (context.dataset.label.includes("Temperature")) label += "°C";
               if (context.dataset.label.includes("Humidity")) label += "%";
-              if (context.dataset.label.includes("CO₂")) label += " ppm";
+              if (context.dataset.label.includes("\u2082")) label += " ppm";
               if (context.dataset.label.includes("Soil")) label += "%";
               if (context.dataset.label.includes("Water")) label += "%";
             } else {
@@ -170,24 +177,31 @@ function Sensors() {
   const exportCSV = () => {
     const headers = [
       "Timestamp",
-      "Temperature (°C)",
-      "Humidity (%)",
-      "CO₂ (ppm)",
-      "Soil Moisture (%)",
-      "Water Level (%)",
+      "Temperature_C",
+      "Humidity_pct",
+      "CO2_ppm",
+      "Soil_Moisture_pct",
+      "Water_Level_pct",
     ];
     const rows = sensorReadings.map((r) => [
-      new Date(r.timestamp).toLocaleString(),
-      r.temperature ?? 0,
-      r.humidity ?? 0,
-      r.co2_ppm ?? 0,
-      r.soil_moisture_percent ?? 0,
-      r.water_level_percent ?? 0,
+      format(new Date(r.timestamp), "yyyy-MM-dd HH:mm:ss"),
+      r.temperature != null && r.temperature !== "" ? r.temperature : "",
+      r.humidity != null && r.humidity !== "" ? r.humidity : "",
+      r.co2_ppm != null && r.co2_ppm !== "" ? r.co2_ppm : "",
+      r.soil_moisture_percent != null && r.soil_moisture_percent !== ""
+        ? r.soil_moisture_percent
+        : "",
+      r.water_level_percent != null && r.water_level_percent !== ""
+        ? r.water_level_percent
+        : "",
     ]);
-    const csvContent = [headers, ...rows]
-      .map((row) => row.join(","))
-      .join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const csvContent = [
+      headers.map(escapeCsvCell).join(","),
+      ...rows.map((row) => row.map(escapeCsvCell).join(",")),
+    ].join("\n");
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -224,7 +238,7 @@ function Sensors() {
           </button>
           <button
             onClick={exportCSV}
-            disabled={sensorReadings.length === 0}
+            disabled={!sensorReadings.length}
             className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700 disabled:opacity-50"
           >
             <Download size={18} />
@@ -256,7 +270,13 @@ function Sensors() {
               }`}
             >
               <metric.icon size={16} />
-              {metric.label}
+              {metric.key === "co2_ppm" ? (
+                <>
+                  CO<sub>2</sub> (ppm)
+                </>
+              ) : (
+                metric.label
+              )}
             </button>
           ))}
         </div>
@@ -269,38 +289,36 @@ function Sensors() {
             <Line data={chartData} options={chartOptions} />
           </div>
         ) : (
-          <div className="h-96 flex items-center justify-center text-gray-500">
-            No valid data available
+          <div className="h-96 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            No sensor data available
           </div>
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Historical Data
-          </h2>
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Historical Data
+        </h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Temp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Humidity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  CO₂
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                  CO<sub>2</sub>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Soil
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Water
                 </th>
               </tr>
@@ -311,23 +329,35 @@ function Sensors() {
                   key={idx}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.temperature?.toFixed(1)}°C
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.temperature != null && !Number.isNaN(reading.temperature)
+                      ? `${Number(reading.temperature).toFixed(1)}°C`
+                      : "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.humidity?.toFixed(1)}%
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.humidity != null && !Number.isNaN(reading.humidity)
+                      ? `${Number(reading.humidity).toFixed(1)}%`
+                      : "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.co2_ppm} ppm
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.co2_ppm != null && !Number.isNaN(reading.co2_ppm)
+                      ? `${reading.co2_ppm} ppm`
+                      : "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.soil_moisture_percent ?? 0}%
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.soil_moisture_percent !== undefined &&
+                    reading.soil_moisture_percent !== null
+                      ? `${reading.soil_moisture_percent}%`
+                      : "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.water_level_percent ?? 0}%
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.water_level_percent !== undefined &&
+                    reading.water_level_percent !== null
+                      ? `${reading.water_level_percent}%`
+                      : "N/A"}
                   </td>
                 </tr>
               ))}

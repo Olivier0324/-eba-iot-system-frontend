@@ -20,7 +20,6 @@ import {
   Droplets,
   Wind,
   Activity,
-  Eye,
   Database,
   Sprout,
   Waves,
@@ -102,6 +101,7 @@ function Overview() {
 
   const stats = [
     {
+      id: "temperature",
       name: "Temperature",
       value: latestReading?.temperature ?? "--",
       avg: avgTemp,
@@ -111,6 +111,7 @@ function Overview() {
       bg: "bg-eco-50 dark:bg-eco-900/20",
     },
     {
+      id: "humidity",
       name: "Humidity",
       value: latestReading?.humidity ?? "--",
       avg: avgHumidity,
@@ -120,7 +121,13 @@ function Overview() {
       bg: "bg-ocean-50 dark:bg-ocean-900/20",
     },
     {
+      id: "co2",
       name: "CO₂",
+      displayName: (
+        <>
+          CO<sub>2</sub>
+        </>
+      ),
       value: latestReading?.co2_ppm ?? "--",
       avg: avgCO2,
       unit: "ppm",
@@ -129,6 +136,7 @@ function Overview() {
       bg: "bg-teal-50 dark:bg-teal-900/20",
     },
     {
+      id: "soil",
       name: "Soil Moisture",
       value: latestReading?.soil_moisture_percent ?? "--",
       avg: avgSoil,
@@ -138,6 +146,7 @@ function Overview() {
       bg: "bg-yellow-50 dark:bg-yellow-900/20",
     },
     {
+      id: "water",
       name: "Water Level",
       value: latestReading?.water_level_percent ?? "--",
       avg: avgWater,
@@ -147,6 +156,7 @@ function Overview() {
       bg: "bg-blue-50 dark:bg-blue-900/20",
     },
     {
+      id: "air-quality",
       name: "Air Quality",
       value:
         latestReading?.co2_ppm > 1000
@@ -338,7 +348,6 @@ const handlePageClick = (page) => {
     <div className="space-y-6">
       <div className="bg-linear-to-r from-eco-500 to-ocean-500 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3">
-          {/* <Eye className="h-8 w-8" /> */}
           <div>
             <h1 className="text-2xl font-bold">Environmental Dashboard</h1>
             <p className="text-white/80 mt-1">
@@ -378,7 +387,7 @@ const handlePageClick = (page) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {stats.map((stat) => (
           <div
-            key={stat.name}
+            key={stat.id}
             className={`rounded-2xl p-4 ${stat.bg} border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -403,7 +412,7 @@ const handlePageClick = (page) => {
               )}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              {stat.name}
+              {stat.displayName ?? stat.name}
             </p>
           </div>
         ))}
@@ -428,7 +437,7 @@ const handlePageClick = (page) => {
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            CO₂ Distribution
+            CO<sub>2</sub> distribution
           </h2>
           {co2Levels.length > 0 ? (
             <div className="h-64 flex items-center justify-center">
@@ -436,17 +445,17 @@ const handlePageClick = (page) => {
             </div>
           ) : (
             <div className="h-64 flex items-center justify-center text-gray-500">
-              No CO₂ data available
+              No CO<sub>2</sub> data available
             </div>
           )}
         </div>
       </div>
 
       {/* Recent Readings Table with Pagination */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Recent Readings
+            Recent readings
           </h2>
           <Database className="h-5 w-5 text-gray-400" />
         </div>
@@ -454,43 +463,61 @@ const handlePageClick = (page) => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  Date & Time
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Temp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Humidity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  CO₂
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                  CO<sub>2</sub>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Soil
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                   Water
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {paginatedReadings.slice(0, 10).map((reading, idx) => (
+              {paginatedReadings.map((reading, idx) => (
                 <tr
                   key={idx}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {new Date(reading.timestamp).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-sm">{reading.temperature}°C</td>
-                  <td className="px-6 py-4 text-sm">{reading.humidity}%</td>
-                  <td className="px-6 py-4 text-sm">{reading.co2_ppm} ppm</td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.soil_moisture_percent || 0}%
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.temperature != null && !Number.isNaN(reading.temperature)
+                      ? `${Number(reading.temperature).toFixed(1)}°C`
+                      : "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {reading.water_level_percent || 0}%
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.humidity != null && !Number.isNaN(reading.humidity)
+                      ? `${Number(reading.humidity).toFixed(1)}%`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.co2_ppm != null && !Number.isNaN(reading.co2_ppm)
+                      ? `${reading.co2_ppm} ppm`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.soil_moisture_percent !== undefined &&
+                    reading.soil_moisture_percent !== null
+                      ? `${reading.soil_moisture_percent}%`
+                      : "N/A"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {reading.water_level_percent !== undefined &&
+                    reading.water_level_percent !== null
+                      ? `${reading.water_level_percent}%`
+                      : "N/A"}
                   </td>
                 </tr>
               ))}
