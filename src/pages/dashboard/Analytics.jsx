@@ -275,17 +275,6 @@ function Analytics() {
     },
   ];
 
-  const severityData = {
-    labels: alertStats?.bySeverity?.map((s) => s._id) || [],
-    datasets: [
-      {
-        label: "Alerts by Severity",
-        data: alertStats?.bySeverity?.map((s) => s.count) || [],
-        backgroundColor: ["#DC3545", "#FD7E14", "#FFC107", "#17A2B8"],
-      },
-    ],
-  };
-
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -326,12 +315,6 @@ function Analytics() {
     },
   };
 
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: "top" } },
-  };
-
   const co2ChartData = {
     labels: chartData1.labels,
     datasets: [
@@ -368,9 +351,9 @@ function Analytics() {
   const paginatedData = filteredData.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
- const handlePageClick = (page) => {
-   setCurrentPage(page);
- };
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
 
   const clearDateFilter = () => {
     setStartDate(null);
@@ -481,22 +464,12 @@ function Analytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            CO₂ Levels (ppm)
-          </h2>
-          <div className="h-80">
-            <Line data={co2ChartData} options={co2Options} />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Alerts by Severity
-          </h2>
-          <div className="h-80">
-            <Bar data={severityData} options={barOptions} />
-          </div>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          CO₂ Levels (ppm)
+        </h2>
+        <div className="h-80">
+          <Line data={co2ChartData} options={co2Options} />
         </div>
       </div>
 
