@@ -1,7 +1,6 @@
 // src/pages/dashboard/Alerts.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  AlertTriangle,
   CheckCircle,
   Eye,
   Check,
@@ -18,6 +17,49 @@ import {
 } from "../../services/api";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
+import FilterPills from "../../components/common/FilterPills";
+
+const FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "resolved", label: "Resolved" },
+  { value: "acknowledged", label: "Acknowledged" },
+];
+
+/** Renders plain text with CO2 / co2 → CO<sub>2</sub> for readability. */
+function RichCo2Text({ text, className = "" }) {
+  if (text == null) return null;
+  if (typeof text !== "string") {
+    return <span className={className}>{String(text)}</span>;
+  }
+  const parts = text.split(/(\bco2\b|\bCO2\b)/gi);
+  return (
+    <span className={className}>
+      {parts.map((part, i) =>
+        /^co2$/i.test(part) ? (
+          <span key={i} className="whitespace-nowrap">
+            CO<sub className="text-[0.78em] leading-none align-baseline">2</sub>
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+}
+
+function formatTypeLabel(type) {
+  if (type == null || type === "") return "—";
+  const t = String(type).trim().toLowerCase();
+  if (t === "co2" || t === "co₂") {
+    return (
+      <span className="whitespace-nowrap">
+        CO<sub className="text-[0.78em] leading-none align-baseline">2</sub>
+      </span>
+    );
+  }
+  return type;
+}
 
 function Alerts() {
   const [filter, setFilter] = useState("all");
@@ -40,9 +82,9 @@ function Alerts() {
   const paginatedAlerts = alerts.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(alerts.length / itemsPerPage);
 
- const handlePageClick = (page) => {
-   setCurrentPage(page);
- };
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
 
   const handleResolve = async (id) => {
     try {
@@ -68,30 +110,38 @@ function Alerts() {
     switch (severity?.toLowerCase()) {
       case "emergency":
         return {
-          bg: "bg-red-100 dark:bg-red-900/30",
-          text: "text-red-700 dark:text-red-400",
-          border: "border-red-500",
+          iconBg: "bg-red-50 dark:bg-red-950/35",
+          iconText: "text-red-600 dark:text-red-400",
+          badge:
+            "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-1 ring-red-200/60 dark:ring-red-800/50",
+          bar: "bg-red-500/55",
           icon: AlertCircle,
         };
       case "critical":
         return {
-          bg: "bg-orange-100 dark:bg-orange-900/30",
-          text: "text-orange-700 dark:text-orange-400",
-          border: "border-orange-500",
+          iconBg: "bg-orange-50 dark:bg-orange-950/35",
+          iconText: "text-orange-600 dark:text-orange-400",
+          badge:
+            "bg-orange-50 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300 ring-1 ring-orange-200/60 dark:ring-orange-800/50",
+          bar: "bg-orange-500/55",
           icon: CircleAlert,
         };
       case "warning":
         return {
-          bg: "bg-yellow-100 dark:bg-yellow-900/30",
-          text: "text-yellow-700 dark:text-yellow-400",
-          border: "border-yellow-500",
+          iconBg: "bg-amber-50 dark:bg-amber-950/35",
+          iconText: "text-amber-700 dark:text-amber-400",
+          badge:
+            "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-1 ring-amber-200/60 dark:ring-amber-800/50",
+          bar: "bg-amber-500/55",
           icon: TriangleAlert,
         };
       default:
         return {
-          bg: "bg-blue-100 dark:bg-blue-900/30",
-          text: "text-blue-700 dark:text-blue-400",
-          border: "border-blue-500",
+          iconBg: "bg-blue-50 dark:bg-blue-950/35",
+          iconText: "text-blue-600 dark:text-blue-400",
+          badge:
+            "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 ring-1 ring-blue-200/60 dark:ring-blue-800/50",
+          bar: "bg-blue-500/50",
           icon: Info,
         };
     }
@@ -99,15 +149,18 @@ function Alerts() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex flex-col items-center justify-center h-96 gap-3">
         <Loader2 className="animate-spin h-8 w-8 text-eco-600" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading alerts…
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Alerts
@@ -116,34 +169,26 @@ function Alerts() {
             Total: {totalAlerts} alerts
           </p>
         </div>
-        <div className="flex gap-2">
-          {["all", "active", "resolved", "acknowledged"].map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                setFilter(status);
-                setCurrentPage(0);
-              }}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${
-                filter === status
-                  ? "bg-eco-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+        <FilterPills
+          ariaLabel="Filter alerts by status"
+          options={FILTER_OPTIONS}
+          value={filter}
+          onChange={(next) => {
+            setFilter(next);
+            setCurrentPage(0);
+          }}
+          className="w-full sm:w-auto"
+        />
       </div>
 
       <div className="space-y-4">
         {paginatedAlerts.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12 sm:py-14 px-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <CheckCircle className="h-12 w-12 text-eco-500 mx-auto mb-3" />
+            <p className="text-gray-600 dark:text-gray-300 font-medium">
               No alerts at this time
             </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
               All systems are operating normally
             </p>
           </div>
@@ -154,70 +199,99 @@ function Alerts() {
             return (
               <div
                 key={alert._id}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-l-4 ${styles.border} border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow`}
+                className="relative overflow-hidden rounded-2xl border border-gray-200/95 dark:border-gray-700/90 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex flex-wrap justify-between items-start gap-4">
-                  <div className="flex gap-4">
-                    <div className={`p-2 rounded-xl ${styles.bg}`}>
-                      <IconComponent className={`h-5 w-5 ${styles.text}`} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {alert.title}
-                        </h3>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${styles.bg} ${styles.text}`}
-                        >
-                          {alert.severity}
-                        </span>
+                {/* Slim accent bar — severity hint without a heavy outline */}
+                <div
+                  className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${styles.bar}`}
+                  aria-hidden
+                />
+                <div className="relative pl-4 sm:pl-5 pr-4 sm:pr-5 py-4 sm:py-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex gap-3 sm:gap-4 min-w-0">
+                      <div
+                        className={`shrink-0 p-2.5 rounded-xl ${styles.iconBg}`}
+                      >
+                        <IconComponent
+                          className={`h-5 w-5 ${styles.iconText}`}
+                          aria-hidden
+                        />
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {alert.message}
-                      </p>
-                      <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
-                        <span>Value: {alert.value}</span>
-                        <span>Threshold: {alert.threshold}</span>
-                        <span>Type: {alert.type}</span>
-                        <span>
-                          {new Date(alert.createdAt).toLocaleString()}
-                        </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 gap-y-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white leading-snug">
+                            <RichCo2Text text={alert.title} />
+                          </h3>
+                          <span
+                            className={`text-xs px-2.5 py-0.5 rounded-full capitalize font-medium ${styles.badge}`}
+                          >
+                            {alert.severity}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                          <RichCo2Text text={alert.message} />
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-xs text-gray-500 dark:text-gray-400">
+                          <span>
+                            Value:{" "}
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {alert.value}
+                            </span>
+                          </span>
+                          <span>
+                            Threshold:{" "}
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {alert.threshold}
+                            </span>
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            Type:{" "}
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {formatTypeLabel(alert.type)}
+                            </span>
+                          </span>
+                          <span className="text-gray-400 dark:text-gray-500">
+                            {new Date(alert.createdAt).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {alert.status === "active" && (
-                      <>
-                        <button
-                          onClick={() => handleAcknowledge(alert._id)}
-                          disabled={isAcknowledging}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm disabled:opacity-50"
-                        >
-                          <Check size={14} />
-                          Acknowledge
-                        </button>
-                        <button
-                          onClick={() => handleResolve(alert._id)}
-                          disabled={isResolving}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-eco-100 dark:bg-eco-900/30 text-eco-700 dark:text-eco-400 hover:bg-eco-200 dark:hover:bg-eco-900/50 transition-colors text-sm disabled:opacity-50"
-                        >
-                          <CheckCircle size={14} />
-                          Resolve
-                        </button>
-                      </>
-                    )}
-                    {alert.status === "resolved" && (
-                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm">
-                        <CheckCircle size={14} />
-                        Resolved
-                      </span>
-                    )}
-                    {alert.status === "acknowledged" && (
-                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm">
-                        <Eye size={14} />
-                        Acknowledged
-                      </span>
-                    )}
+                    <div className="flex flex-wrap gap-2 shrink-0 lg:justify-end">
+                      {alert.status === "active" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleAcknowledge(alert._id)}
+                            disabled={isAcknowledging}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors disabled:opacity-50"
+                          >
+                            <Check size={16} strokeWidth={2.5} />
+                            Acknowledge
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleResolve(alert._id)}
+                            disabled={isResolving}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-eco-600 text-white hover:bg-eco-700 shadow-sm transition-colors disabled:opacity-50"
+                          >
+                            <CheckCircle size={16} strokeWidth={2.5} />
+                            Resolve
+                          </button>
+                        </>
+                      )}
+                      {alert.status === "resolved" && (
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-300 ring-1 ring-eco-200/70 dark:ring-eco-800/50">
+                          <CheckCircle size={16} />
+                          Resolved
+                        </span>
+                      )}
+                      {alert.status === "acknowledged" && (
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-700/80 text-gray-800 dark:text-gray-200 ring-1 ring-gray-200/80 dark:ring-gray-600/60">
+                          <Eye size={16} />
+                          Acknowledged
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

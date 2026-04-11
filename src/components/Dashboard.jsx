@@ -1,11 +1,18 @@
 // src/components/Dashboard.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../services/reducers/authReducer";
-import { useLogoutMutation, useGetAllSensorDataQuery } from "../services/api";
+import {
+  useLogoutMutation,
+  useGetAllSensorDataQuery,
+  useGetNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+} from "../services/api";
 import { toast } from "react-toastify";
 import { connectSocket, disconnectSocket } from "../services/socket";
+import { useTheme } from "../context/ThemeContext";
 import {
   LayoutDashboard,
   Menu,
@@ -18,23 +25,62 @@ import {
   Bell,
   Eye,
   Activity,
-  Droplets,
-  Thermometer,
-  Wind,
   Database,
   AlertTriangle,
   ChevronDown,
   ChevronRight,
   MessageSquare,
-  BookOpen, Users,MoreVertical,
-  MoreHorizontal
+  BookOpen,
+  Users,
+  MoreHorizontal,
+  ChevronsLeft,
+  ChevronsRight,
+  Moon,
+  Sun,
 } from "lucide-react";
 
+const SIDEBAR_COLLAPSED_KEY = "eba-dashboard-sidebar-collapsed";
+
+function isLikelyMongoId(id) {
+  return typeof id === "string" && /^[a-f\d]{24}$/i.test(id);
+}
+
+function mapApiNotification(n) {
+  return {
+    id: n._id,
+    title: n.title || "Notification",
+    message: n.message || "",
+    read: Boolean(n.isRead),
+    timestamp: n.createdAt ? new Date(n.createdAt) : new Date(),
+    priority: n.priority,
+    type: n.type,
+    fromApi: true,
+  };
+}
+
 function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
+  /** Live socket toasts (IDs are numeric); server list uses Mongo _id strings */
+  const [localRealtime, setLocalRealtime] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [latestSensorData, setLatestSensorData] = useState(null);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -44,6 +90,36 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
+  const { theme, toggleTheme } = useTheme();
+
+  const { data: notifPayload, refetch: refetchNotifications } =
+    useGetNotificationsQuery(
+      { page: 1, limit: 40 },
+      { skip: !token, pollingInterval: 60000 },
+    );
+  const [markNotificationReadApi] = useMarkNotificationAsReadMutation();
+  const [markAllNotificationsReadApi] = useMarkAllNotificationsAsReadMutation();
+
+  const apiNotifications = useMemo(
+    () => (notifPayload?.list || []).map(mapApiNotification),
+    [notifPayload],
+  );
+
+  const mergedNotifications = useMemo(() => {
+    const merged = [...localRealtime, ...apiNotifications];
+    const seen = new Set();
+    return merged.filter((n) => {
+      const k = String(n.id);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [localRealtime, apiNotifications]);
+
+  const unreadCount = useMemo(
+    () => mergedNotifications.filter((n) => !n.read).length,
+    [mergedNotifications],
+  );
 
   // Fetch latest sensor data
   const { data: sensorData } = useGetAllSensorDataQuery();
@@ -76,25 +152,25 @@ function Dashboard() {
               type: "warning",
               read: false,
               timestamp: new Date(),
+              fromApi: false,
             };
-            setNotifications((prev) => [newNotification, ...prev].slice(0, 50));
-            setUnreadCount((prev) => prev + 1);
+            setLocalRealtime((prev) => [newNotification, ...prev].slice(0, 25));
             toast.warning(newNotification.message);
           }
         });
 
         socket.on("new-alerts", (alerts) => {
-          alerts.forEach((alert) => {
+          alerts.forEach((alert, idx) => {
             const newNotification = {
-              id: Date.now(),
+              id: `rt-${Date.now()}-${idx}`,
               title: alert.title,
               message: alert.message,
               type: alert.severity,
               read: false,
               timestamp: new Date(),
+              fromApi: false,
             };
-            setNotifications((prev) => [newNotification, ...prev].slice(0, 50));
-            setUnreadCount((prev) => prev + 1);
+            setLocalRealtime((prev) => [newNotification, ...prev].slice(0, 25));
             toast.error(alert.title);
           });
         });
@@ -133,17 +209,33 @@ function Dashboard() {
     }
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)),
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  };
+  const markNotificationAsRead = useCallback(
+    async (id) => {
+      if (isLikelyMongoId(id)) {
+        try {
+          await markNotificationReadApi(id).unwrap();
+          await refetchNotifications();
+        } catch {
+          /* ignore */
+        }
+      } else {
+        setLocalRealtime((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+        );
+      }
+    },
+    [markNotificationReadApi, refetchNotifications],
+  );
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
-    setUnreadCount(0);
-  };
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await markAllNotificationsReadApi().unwrap();
+      await refetchNotifications();
+    } catch {
+      /* still clear local banners */
+    }
+    setLocalRealtime((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, [markAllNotificationsReadApi, refetchNotifications]);
 
   const isAdmin = user?.role === "admin";
 
@@ -191,6 +283,15 @@ function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button
+            type="button"
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
@@ -204,20 +305,82 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Sidebar */}
+      {/* Mobile notification sheet */}
+      {showNotifications && (
+        <div className="md:hidden fixed inset-x-0 top-[3.25rem] z-[35] px-3 max-h-[min(70vh,calc(100vh-5rem))]">
+          <div className="rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 overflow-hidden flex flex-col max-h-[min(70vh,calc(100vh-5.5rem))]">
+            <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center shrink-0">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Notifications
+              </h3>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => void markAllAsRead()}
+                  className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                >
+                  Mark all as read
+                </button>
+              )}
+            </div>
+            <div className="overflow-y-auto flex-1 min-h-0">
+              {mergedNotifications.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No notifications
+                </div>
+              ) : (
+                mergedNotifications.map((notif) => (
+                  <button
+                    type="button"
+                    key={notif.id}
+                    onClick={() => void markNotificationAsRead(notif.id)}
+                    className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
+                      !notif.read
+                        ? "bg-eco-50/80 dark:bg-eco-950/25"
+                        : "bg-transparent"
+                    }`}
+                  >
+                    <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                      {notif.title}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">
+                      {notif.message}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      {notif.timestamp instanceof Date
+                        ? notif.timestamp.toLocaleString()
+                        : new Date(notif.timestamp).toLocaleString()}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sidebar: full width on mobile drawer; md+ collapsible to icon rail */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-72 shrink-0 bg-white dark:bg-gray-800 shadow-xl transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 ${
+          sidebarCollapsed ? "md:w-20" : "md:w-72"
+        } ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full min-h-0">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center">
+          <div
+            className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-5 md:shrink-0 ${
+              sidebarCollapsed ? "md:p-3 md:justify-center" : ""
+            }`}
+          >
+            <div
+              className={`flex items-center gap-2 min-w-0 ${
+                sidebarCollapsed ? "md:justify-center" : ""
+              }`}
+            >
+              <div className="w-8 h-8 shrink-0 rounded-lg bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center">
                 <Eye className="w-4 h-4 text-white" />
               </div>
-              <div>
+              <div className={sidebarCollapsed ? "md:hidden" : ""}>
                 <span className="text-lg font-bold text-gray-900 dark:text-white">
                   EBA
                 </span>
@@ -228,24 +391,32 @@ function Dashboard() {
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setMobileSidebarOpen(false)}
-              className="md:hidden text-gray-600 dark:text-gray-300"
+              className="md:hidden text-gray-600 dark:text-gray-300 shrink-0"
+              aria-label="Close menu"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* User Info */}
-          <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-linear-to-br from-eco-50 to-ocean-50 dark:from-eco-900/20 dark:to-ocean-900/20">
-            <div className="flex items-center">
-              <div className="h-12 w-12 rounded-full bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center text-white">
+          <div
+            className={`border-b border-gray-200 dark:border-gray-700 bg-linear-to-br from-eco-50 to-ocean-50 dark:from-eco-900/20 dark:to-ocean-900/20 p-5 ${
+              sidebarCollapsed ? "md:p-3" : ""
+            }`}
+          >
+            <div
+              className={`flex items-center ${sidebarCollapsed ? "md:flex-col md:justify-center md:gap-0" : ""}`}
+            >
+              <div className="h-12 w-12 shrink-0 rounded-full bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center text-white">
                 <User size={20} />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+              <div className={`ml-3 min-w-0 ${sidebarCollapsed ? "md:hidden" : ""}`}>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {user?.username || "User"}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {user?.email || "user@example.com"}
                 </p>
                 <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full bg-eco-100 dark:bg-eco-900/50 text-eco-700 dark:text-eco-300">
@@ -256,65 +427,103 @@ function Dashboard() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className={`flex-1 overflow-y-auto min-h-0 ${sidebarCollapsed ? "md:p-2" : "p-4"}`}>
             <ul className="space-y-1">
               {navItems.map((item) => (
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                    title={item.name}
+                    className={`flex items-center rounded-xl transition-all duration-200 group ${
+                      sidebarCollapsed ? "md:justify-center md:px-2 md:py-3" : "px-4 py-3"
+                    } ${
                       location.pathname === item.path
-                        ? "bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 border-r-2 border-eco-500"
+                        ? `bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 ${
+                            sidebarCollapsed
+                              ? "md:border-r-0 md:ring-2 md:ring-eco-500/35"
+                              : "border-r-2 border-eco-500"
+                          }`
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
                     <item.icon
                       size={20}
-                      className={`mr-3 ${location.pathname === item.path ? "text-eco-500" : "group-hover:text-eco-500"}`}
+                      className={`shrink-0 ${sidebarCollapsed ? "md:mr-0" : "mr-3"} ${location.pathname === item.path ? "text-eco-500" : "group-hover:text-eco-500"}`}
                     />
-                    <span className="font-medium">{item.name}</span>
+                    <span
+                      className={`font-medium truncate ${sidebarCollapsed ? "md:hidden" : ""}`}
+                    >
+                      {item.name}
+                    </span>
                   </Link>
                 </li>
               ))}
 
               {/* Admin Dropdown Menu - Only visible to admin/manager */}
               {isAdmin && (
-                <li className="mt-2">
+                <li className={`mt-2 ${sidebarCollapsed ? "relative" : ""}`}>
                   <button
+                    type="button"
                     onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
+                    title="Administration"
+                    className={`w-full flex items-center rounded-xl transition-all duration-200 group ${
+                      sidebarCollapsed
+                        ? "md:justify-center md:px-2 md:py-3"
+                        : "justify-between px-4 py-3"
+                    } ${
                       adminItems.some((item) => location.pathname === item.path)
-                        ? "bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 border-r-2 border-eco-500"
+                        ? `bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 ${
+                            sidebarCollapsed
+                              ? "md:border-r-0 md:ring-2 md:ring-eco-500/35"
+                              : "border-r-2 border-eco-500"
+                          }`
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
-                    <div className="flex items-center">
-                      <span className="font-medium flex justify-between items-center gap-2.5">
-                        <span>More</span>
-                        <MoreHorizontal />
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <MoreHorizontal size={20} className="shrink-0" />
+                      <span
+                        className={`font-medium ${sidebarCollapsed ? "md:hidden" : ""}`}
+                      >
+                        More
                       </span>
                     </div>
-                    {adminMenuOpen ? (
-                      <ChevronDown size={18} />
-                    ) : (
-                      <ChevronRight size={18} />
-                    )}
+                    <span className={sidebarCollapsed ? "md:hidden" : ""}>
+                      {adminMenuOpen ? (
+                        <ChevronDown size={18} />
+                      ) : (
+                        <ChevronRight size={18} />
+                      )}
+                    </span>
                   </button>
 
                   {adminMenuOpen && (
-                    <ul className="ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800">
+                    <ul
+                      className={
+                        sidebarCollapsed
+                          ? "absolute left-full top-0 z-[60] ml-1 mt-0 min-w-[12.5rem] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg space-y-0.5"
+                          : "ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800"
+                      }
+                    >
                       {adminItems.map((item) => (
                         <li key={item.path}>
                           <Link
                             to={item.path}
-                            className={`flex items-center px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                            title={item.name}
+                            onClick={() => setAdminMenuOpen(false)}
+                            className={`flex items-center rounded-lg transition-all duration-200 ${
+                              sidebarCollapsed ? "px-3 py-2" : "px-4 py-2.5"
+                            } ${
                               location.pathname === item.path
                                 ? "text-eco-600 dark:text-eco-400 bg-eco-50 dark:bg-eco-900/20"
                                 : "text-gray-600 dark:text-gray-400 hover:text-eco-600 dark:hover:text-eco-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                             }`}
                           >
-                            <item.icon size={16} className="mr-3" />
-                            <span className="text-sm">{item.name}</span>
+                            <item.icon
+                              size={16}
+                              className={`shrink-0 ${sidebarCollapsed ? "mr-2" : "mr-3"}`}
+                            />
+                            <span className="text-sm truncate">{item.name}</span>
                           </Link>
                         </li>
                       ))}
@@ -326,11 +535,19 @@ function Dashboard() {
           </nav>
 
           {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div
+            className={`border-t border-gray-200 dark:border-gray-700 shrink-0 ${
+              sidebarCollapsed ? "md:p-2" : "p-4"
+            }`}
+          >
             <button
+              type="button"
               onClick={handleLogout}
               disabled={isLoading}
-              className="flex items-center w-full px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group"
+              title="Log out"
+              className={`flex items-center w-full rounded-xl text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group ${
+                sidebarCollapsed ? "md:justify-center md:px-2 md:py-3" : "px-4 py-3"
+              }`}
             >
               {isLoading ? (
                 <>
@@ -360,9 +577,9 @@ function Dashboard() {
                 <>
                   <LogOut
                     size={20}
-                    className="mr-3 group-hover:text-red-500 transition-colors"
+                    className={`shrink-0 group-hover:text-red-500 transition-colors ${sidebarCollapsed ? "md:mr-0" : "mr-3"}`}
                   />
-                  Logout
+                  <span className={sidebarCollapsed ? "md:hidden" : ""}>Logout</span>
                 </>
               )}
             </button>
@@ -384,19 +601,34 @@ function Dashboard() {
         <header className="hidden md:flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 shadow-sm z-10">
           <div className="flex items-center">
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              type="button"
+              onClick={toggleSidebarCollapsed}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               className="mr-4 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors"
             >
-              <Menu size={20} />
+              {sidebarCollapsed ? (
+                <ChevronsRight size={20} />
+              ) : (
+                <ChevronsLeft size={20} />
+              )}
             </button>
             <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
               {currentPage}
             </h1>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             {/* Notifications */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
@@ -410,44 +642,50 @@ function Dashboard() {
 
               {/* Notifications Dropdown */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                  <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <div className="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 z-50 overflow-hidden flex flex-col max-h-[min(24rem,70vh)]">
+                  <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center shrink-0">
                     <h3 className="font-semibold text-gray-900 dark:text-white">
                       Notifications
                     </h3>
                     {unreadCount > 0 && (
                       <button
-                        onClick={markAllAsRead}
-                        className="text-xs text-eco-600 hover:text-eco-700"
+                        type="button"
+                        onClick={() => void markAllAsRead()}
+                        className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
                       >
                         Mark all as read
                       </button>
                     )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                  <div className="overflow-y-auto flex-1 min-h-0">
+                    {mergedNotifications.length === 0 ? (
+                      <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
                         No notifications
                       </div>
                     ) : (
-                      notifications.map((notif) => (
-                        <div
+                      mergedNotifications.map((notif) => (
+                        <button
+                          type="button"
                           key={notif.id}
-                          onClick={() => markNotificationAsRead(notif.id)}
-                          className={`p-3 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                            !notif.read ? "bg-eco-50 dark:bg-eco-900/20" : ""
+                          onClick={() => void markNotificationAsRead(notif.id)}
+                          className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
+                            !notif.read
+                              ? "bg-eco-50/80 dark:bg-eco-950/25"
+                              : ""
                           }`}
                         >
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
                             {notif.title}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">
                             {notif.message}
                           </p>
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            {new Date(notif.timestamp).toLocaleTimeString()}
+                            {notif.timestamp instanceof Date
+                              ? notif.timestamp.toLocaleString()
+                              : new Date(notif.timestamp).toLocaleString()}
                           </p>
-                        </div>
+                        </button>
                       ))
                     )}
                   </div>

@@ -17,18 +17,18 @@ export const ThemeProvider = ({ children }) => {
 
   const [theme, setTheme] = useState(getSavedTheme());
 
-  // Apply theme to document
+  // Tailwind `dark:` variant matches `.dark` on an ancestor (see index.css @custom-variant).
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // Remove existing theme classes
-    root.classList.remove('dark', 'light');
-    
-    // Add current theme class
-    root.classList.add(theme);
-    
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', theme);
+    root.classList.remove("dark", "light");
+    if (theme === "dark") {
+      root.classList.add("dark");
+    }
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      /* private mode etc. */
+    }
   }, [theme]);
 
   const toggleTheme = () => {

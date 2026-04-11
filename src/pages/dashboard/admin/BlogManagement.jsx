@@ -22,6 +22,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Pagination from "../../../components/common/Pagination";
+import ModalShell from "../../../components/common/ModalShell";
 
 const BlogManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -355,10 +356,12 @@ const BlogManagement = () => {
         )}
       </div>
 
-      {/* Professional Modal for Create/Edit */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl my-8 shadow-2xl animate-in zoom-in-95 duration-200">
+      <ModalShell
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        maxWidthClass="max-w-3xl"
+      >
+        <div className="bg-white dark:bg-gray-800 rounded-2xl w-full my-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
@@ -608,8 +611,7 @@ const BlogManagement = () => {
               </div>
             </form>
           </div>
-        </div>
-      )}
+      </ModalShell>
     </div>
   );
 };

@@ -66,8 +66,17 @@ export const api = createApi({
         }),
 
         // ==================== SENSOR ENDPOINTS ====================
+        // Optional query params (e.g. { limit }) for large exports; omit for default list.
         getAllSensorData: builder.query({
-            query: () => '/sensor/data',
+            query: (arg) => {
+                const params =
+                    arg && typeof arg === 'object' && Object.keys(arg).length > 0
+                        ? arg
+                        : undefined;
+                return params
+                    ? { url: '/sensor/data', params }
+                    : '/sensor/data';
+            },
             transformResponse: (response) => response.data || response,
             providesTags: ['Sensor'],
         }),
@@ -154,32 +163,57 @@ export const api = createApi({
             providesTags: ['Alert'],
         }),
 
-        // ==================== NOTIFICATION ENDPOINTS ====================
+        // ==================== NOTIFICATION ENDPOINTS (matches /notifications routes) ====================
         getNotifications: builder.query({
-            query: (params) => ({
-                url: '/alerts/notifications',
-                params,
+            query: (params = {}) => ({
+                url: '/notifications',
+                params: {
+                    page: params.page ?? 1,
+                    limit: params.limit ?? 20,
+                    ...(params.isRead !== undefined && params.isRead !== ''
+                        ? { isRead: params.isRead }
+                        : {}),
+                    ...(params.type ? { type: params.type } : {}),
+                    ...(params.priority ? { priority: params.priority } : {}),
+                },
             }),
-            transformResponse: (response) => response.data || response,
+            transformResponse: (response) => ({
+                list: response?.data ?? [],
+                pagination: response?.pagination,
+                unreadCount: response?.unreadCount ?? 0,
+            }),
             providesTags: ['Notification'],
+        }),
+        getNotificationPreferences: builder.query({
+            query: () => '/notifications/preferences',
+            transformResponse: (response) => response?.data ?? response,
+            providesTags: ['Notification'],
+        }),
+        updateNotificationPreferences: builder.mutation({
+            query: (body) => ({
+                url: '/notifications/preferences',
+                method: 'PUT',
+                body,
+            }),
+            invalidatesTags: ['Notification'],
         }),
         markNotificationAsRead: builder.mutation({
             query: (id) => ({
-                url: `/alerts/notifications/${id}/read`,
+                url: `/notifications/${id}/read`,
                 method: 'PUT',
             }),
             invalidatesTags: ['Notification'],
         }),
         markAllNotificationsAsRead: builder.mutation({
             query: () => ({
-                url: '/alerts/notifications/read-all',
+                url: '/notifications/read-all',
                 method: 'PUT',
             }),
             invalidatesTags: ['Notification'],
         }),
         deleteNotification: builder.mutation({
             query: (id) => ({
-                url: `/alerts/notifications/${id}`,
+                url: `/notifications/${id}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Notification'],
@@ -383,6 +417,7 @@ export const {
 // Sensor hooks
 export const {
     useGetAllSensorDataQuery,
+    useLazyGetAllSensorDataQuery,
     useGetSensorStatsQuery,
     useGetLatestDataQuery,
 } = api;
@@ -408,6 +443,8 @@ export const {
 // Notification hooks
 export const {
     useGetNotificationsQuery,
+    useGetNotificationPreferencesQuery,
+    useUpdateNotificationPreferencesMutation,
     useMarkNotificationAsReadMutation,
     useMarkAllNotificationsAsReadMutation,
     useDeleteNotificationMutation,

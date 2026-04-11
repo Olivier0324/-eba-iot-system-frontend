@@ -64,9 +64,13 @@ function ControlPanel() {
     }
   };
 
-  const handleRefresh = () => {
-    refetch();
-    toast.info("Refreshing device status...");
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      toast.success("Device status updated");
+    } catch {
+      toast.error("Could not refresh device status");
+    }
   };
 
   const isDeviceOnline = deviceStatus?.status === "online";

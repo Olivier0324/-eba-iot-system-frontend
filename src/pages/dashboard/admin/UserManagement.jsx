@@ -26,8 +26,10 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  FilterX,
   AlertCircle,
 } from "lucide-react";
+import ModalShell from "../../../components/common/ModalShell";
 
 const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -38,6 +40,7 @@ const UserManagement = () => {
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isListRefreshing, setIsListRefreshing] = useState(false);
   const itemsPerPage = 10;
 
   // Debounce search input
@@ -231,6 +234,18 @@ const UserManagement = () => {
     setCurrentPage(0);
   };
 
+  const handleDataRefresh = async () => {
+    setIsListRefreshing(true);
+    try {
+      await Promise.all([refetch(), refetchStats()]);
+      toast.success("Users list refreshed");
+    } catch {
+      toast.error("Could not refresh users");
+    } finally {
+      setIsListRefreshing(false);
+    }
+  };
+
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case "admin":
@@ -385,13 +400,26 @@ const UserManagement = () => {
             <option value="false">Inactive</option>
           </select>
         </div>
-        <div>
+        <div className="flex flex-wrap gap-2">
           <button
+            type="button"
+            onClick={() => void handleDataRefresh()}
+            disabled={isListRefreshing}
+            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw
+              size={16}
+              className={isListRefreshing ? "animate-spin" : ""}
+            />
+            Refresh
+          </button>
+          <button
+            type="button"
             onClick={clearFilters}
             className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
           >
-            <RefreshCw size={16} />
-            Clear
+            <FilterX size={16} />
+            Clear filters
           </button>
         </div>
       </div>
@@ -612,10 +640,12 @@ const UserManagement = () => {
         )}
       </div>
 
-      {/* User Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 my-8 shadow-xl">
+      <ModalShell
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        maxWidthClass="max-w-md"
+      >
+        <div className="bg-white dark:bg-gray-800 rounded-2xl w-full p-6 my-8 shadow-2xl border border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -770,8 +800,7 @@ const UserManagement = () => {
               </div>
             </form>
           </div>
-        </div>
-      )}
+      </ModalShell>
     </div>
   );
 };

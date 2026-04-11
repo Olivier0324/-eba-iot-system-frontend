@@ -1,6 +1,6 @@
 // src/components/common/Navbar.jsx
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Menu,
   X,
@@ -10,14 +10,17 @@ import {
   FileText,
   HelpCircle,
   Eye,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
+import { useTheme } from "../../context/ThemeContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,7 +73,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm shadow-sm border-b border-gray-100 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -89,8 +92,8 @@ const Navbar = () => {
                 onClick={() => scrollToSection(link.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeSection === link.id
-                    ? "bg-eco-50 text-eco-600"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-eco-600"
+                    ? "bg-eco-50 dark:bg-eco-950/40 text-eco-600 dark:text-eco-400"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400"
                 }`}
               >
                 {link.name}
@@ -99,7 +102,15 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Right Links */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             <Link
               to="/dashboard"
               className="px-4 py-2 bg-eco-600 text-white rounded-lg text-sm font-medium hover:bg-eco-700 transition-all shadow-sm"
@@ -107,16 +118,19 @@ const Navbar = () => {
               Dashboard
             </Link>
             <div className="relative group">
-              <button className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-eco-600 transition-colors">
+              <button
+                type="button"
+                className="flex items-center gap-1 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
+              >
                 <BookOpen size={16} />
                 <span className="text-sm">Resources</span>
               </button>
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 {resourceLinks.map((link, idx) => (
                   <a
                     key={idx}
                     href={link.href}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-eco-50 hover:text-eco-600 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
                   >
                     <link.icon size={16} />
                     {link.name}
@@ -128,8 +142,9 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -143,30 +158,42 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-b border-gray-100"
+            className="md:hidden bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800"
           >
             <div className="px-4 py-4 space-y-1">
               {navLinks.map((link) => (
                 <button
                   key={link.id}
+                  type="button"
                   onClick={() => scrollToSection(link.id)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-eco-50 hover:text-eco-600 transition-colors"
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
                 >
                   <span>{link.name}</span>
                 </button>
               ))}
-              <div className="border-t border-gray-100 my-2"></div>
+              <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
+              <button
+                type="button"
+                onClick={() => {
+                  toggleTheme();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+              </button>
               {resourceLinks.map((link, idx) => (
                 <a
                   key={idx}
                   href={link.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-eco-50 hover:text-eco-600 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
                 >
                   <link.icon size={18} />
                   <span>{link.name}</span>
                 </a>
               ))}
-              <div className="border-t border-gray-100 my-2"></div>
+              <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
               <Link
                 to="/dashboard"
                 className="block w-full text-center px-4 py-3 bg-eco-600 text-white rounded-lg font-medium hover:bg-eco-700 transition-colors"

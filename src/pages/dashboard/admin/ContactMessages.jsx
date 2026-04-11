@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Pagination from "../../../components/common/Pagination";
+import ModalShell from "../../../components/common/ModalShell";
 import { api } from "../../../services/api";
 
 const ContactMessages = () => {
@@ -385,10 +386,13 @@ const ContactMessages = () => {
         )}
       </div>
 
-      {/* Professional Reply Modal */}
-      {showReplyModal && selectedMessage && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200">
+      <ModalShell
+        open={Boolean(showReplyModal && selectedMessage)}
+        onClose={() => setShowReplyModal(false)}
+        maxWidthClass="max-w-2xl"
+      >
+        {selectedMessage && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl w-full shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
@@ -490,9 +494,9 @@ const ContactMessages = () => {
                 </button>
               </div>
             </div>
-          </div>
         </div>
-      )}
+        )}
+      </ModalShell>
     </div>
   );
 };

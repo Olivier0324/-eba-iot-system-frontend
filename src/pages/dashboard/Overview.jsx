@@ -1,8 +1,6 @@
 // src/pages/dashboard/Overview.jsx
 import React, { useState, useEffect } from "react";
 import { Line, Doughnut } from "react-chartjs-2";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,10 +21,10 @@ import {
   Database,
   Sprout,
   Waves,
-  Calendar,
 } from "lucide-react";
 import { useGetAllSensorDataQuery } from "../../services/api";
 import Pagination from "../../components/common/Pagination";
+import DateRangeFilterBar from "../../components/common/DateRangeFilterBar";
 
 ChartJS.register(
   CategoryScale,
@@ -357,31 +355,13 @@ const handlePageClick = (page) => {
         </div>
       </div>
 
-      {/* Date Filter */}
-      <div className="flex flex-wrap items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <Calendar className="h-5 w-5 text-gray-500" />
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => setStartDate(date)}
-          placeholderText="Start Date"
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
-        />
-        <span className="text-gray-500">to</span>
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => setEndDate(date)}
-          placeholderText="End Date"
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
-        />
-        {(startDate || endDate) && (
-          <button
-            onClick={clearDateFilter}
-            className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 text-sm"
-          >
-            Clear Filter
-          </button>
-        )}
-      </div>
+      <DateRangeFilterBar
+        startDate={startDate}
+        endDate={endDate}
+        onStartChange={setStartDate}
+        onEndChange={setEndDate}
+        onClear={clearDateFilter}
+      />
 
       {/* Stats Cards - 6 cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">

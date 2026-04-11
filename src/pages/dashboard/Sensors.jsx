@@ -1,15 +1,5 @@
 // src/pages/dashboard/Sensors.jsx
 import React, { useState, useEffect, useMemo } from "react";
-
-/** Chart.js label (canvas text); Unicode subscript ₂ renders reliably. */
-const CO2_CHART_LABEL = "CO\u2082 (ppm)";
-
-function escapeCsvCell(value) {
-  if (value === null || value === undefined || value === "") return "";
-  const s = String(value);
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -31,9 +21,24 @@ import {
   Sprout,
   Waves,
 } from "lucide-react";
-import { useGetAllSensorDataQuery } from "../../services/api";
+import { toast } from "react-toastify";
+import {
+  useGetAllSensorDataQuery,
+  useLazyGetAllSensorDataQuery,
+} from "../../services/api";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
+import FilterPills from "../../components/common/FilterPills";
+
+/** Chart.js label (canvas text); Unicode subscript ₂ renders reliably. */
+const CO2_CHART_LABEL = "CO\u2082 (ppm)";
+
+function escapeCsvCell(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const s = String(value);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
 
 ChartJS.register(
   CategoryScale,
@@ -49,8 +54,10 @@ ChartJS.register(
 function Sensors() {
   const [selectedMetric, setSelectedMetric] = useState("all");
   const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery();
+  const [fetchSensorExport] = useLazyGetAllSensorDataQuery();
   const [sensorReadings, setSensorReadings] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
@@ -76,28 +83,43 @@ function Sensors() {
     {
       key: "temperature",
       label: "Temperature (°C)",
+      pillLabel: "Temperature",
       color: "#2E7D32",
       icon: Thermometer,
     },
     {
       key: "humidity",
       label: "Humidity (%)",
+      pillLabel: "Humidity",
       color: "#2E6B9E",
       icon: Droplets,
     },
-    { key: "co2_ppm", label: CO2_CHART_LABEL, color: "#20B2AA", icon: Wind },
+    {
+      key: "co2_ppm",
+      label: CO2_CHART_LABEL,
+      pillLabel: "CO\u2082",
+      color: "#20B2AA",
+      icon: Wind,
+    },
     {
       key: "soil_moisture_percent",
       label: "Soil Moisture (%)",
+      pillLabel: "Soil",
       color: "#D4A017",
       icon: Sprout,
     },
     {
       key: "water_level_percent",
       label: "Water Level (%)",
+      pillLabel: "Water",
       color: "#1E88E5",
       icon: Waves,
     },
+  ];
+
+  const metricPillOptions = [
+    { value: "all", label: "All metrics" },
+    ...metrics.map((m) => ({ value: m.key, label: m.pillLabel })),
   ];
 
   const validForChart = useMemo(
@@ -174,7 +196,29 @@ function Sensors() {
     },
   };
 
-  const exportCSV = () => {
+  const sortByTimestamp = (rows) =>
+    [...rows].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  const exportCSV = async () => {
+    setIsExporting(true);
+    let rowsSource = sensorReadings;
+    try {
+      // Request a large page from the API when supported so the CSV is not capped by the default list size.
+      const bulk = await fetchSensorExport({ limit: 100000 }).unwrap();
+      if (Array.isArray(bulk) && bulk.length >= rowsSource.length) {
+        rowsSource = sortByTimestamp(bulk);
+      }
+    } catch {
+      rowsSource = sensorReadings;
+    } finally {
+      setIsExporting(false);
+    }
+
+    if (!rowsSource.length) {
+      toast.error("No sensor rows to export.");
+      return;
+    }
+
     const headers = [
       "Timestamp",
       "Temperature_C",
@@ -183,7 +227,7 @@ function Sensors() {
       "Soil_Moisture_pct",
       "Water_Level_pct",
     ];
-    const rows = sensorReadings.map((r) => [
+    const rows = rowsSource.map((r) => [
       format(new Date(r.timestamp), "yyyy-MM-dd HH:mm:ss"),
       r.temperature != null && r.temperature !== "" ? r.temperature : "",
       r.humidity != null && r.humidity !== "" ? r.humidity : "",
@@ -237,48 +281,27 @@ function Sensors() {
             <span className="text-sm">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
           </button>
           <button
-            onClick={exportCSV}
-            disabled={!sensorReadings.length}
+            onClick={() => void exportCSV()}
+            disabled={!sensorReadings.length || isExporting}
             className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700 disabled:opacity-50"
           >
             <Download size={18} />
-            <span className="text-sm">Export CSV</span>
+            <span className="text-sm">
+              {isExporting ? "Exporting…" : "Export CSV"}
+            </span>
           </button>
         </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex flex-wrap gap-3 mb-6">
-          <button
-            onClick={() => setSelectedMetric("all")}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              selectedMetric === "all"
-                ? "bg-eco-600 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
-            }`}
-          >
-            All Metrics
-          </button>
-          {metrics.map((metric) => (
-            <button
-              key={metric.key}
-              onClick={() => setSelectedMetric(metric.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                selectedMetric === metric.key
-                  ? "bg-eco-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
-              }`}
-            >
-              <metric.icon size={16} />
-              {metric.key === "co2_ppm" ? (
-                <>
-                  CO<sub>2</sub> (ppm)
-                </>
-              ) : (
-                metric.label
-              )}
-            </button>
-          ))}
+        <div className="mb-6 overflow-x-auto pb-1 -mb-1">
+          <FilterPills
+            ariaLabel="Sensor metric"
+            options={metricPillOptions}
+            value={selectedMetric}
+            onChange={setSelectedMetric}
+            className="min-w-min"
+          />
         </div>
         {isLoading ? (
           <div className="h-96 flex items-center justify-center">

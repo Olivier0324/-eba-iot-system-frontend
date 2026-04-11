@@ -9,6 +9,13 @@ import {
 import { toast } from "react-toastify";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
+import FilterPills from "../../components/common/FilterPills";
+
+const REPORT_TYPE_OPTIONS = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
 
 function Reports() {
   const [reportType, setReportType] = useState("weekly");
@@ -75,20 +82,17 @@ function Reports() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Generate New Report
         </h2>
-        <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Report Type
+        <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Report type
             </label>
-            <select
+            <FilterPills
+              ariaLabel="Report type"
+              options={REPORT_TYPE_OPTIONS}
               value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+              onChange={setReportType}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -100,7 +104,7 @@ function Reports() {
               onChange={(e) =>
                 setDateRange({ ...dateRange, start: e.target.value })
               }
-              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:min-w-[11rem]"
             />
           </div>
           <div>
@@ -113,13 +117,14 @@ function Reports() {
               onChange={(e) =>
                 setDateRange({ ...dateRange, end: e.target.value })
               }
-              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:min-w-[11rem]"
             />
           </div>
           <button
+            type="button"
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="bg-eco-600 text-white px-6 py-2 rounded-xl hover:bg-eco-700 transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto min-h-[2.5rem] justify-center bg-eco-600 text-white px-6 py-2 rounded-xl hover:bg-eco-700 transition-colors flex items-center gap-2 font-medium disabled:opacity-50 self-stretch sm:self-end"
           >
             {isGenerating ? (
               <Loader2 className="animate-spin h-4 w-4" />

@@ -1,8 +1,6 @@
 // src/pages/dashboard/Analytics.jsx
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,7 +19,6 @@ import {
   Thermometer,
   Droplets,
   Wind,
-  Calendar,
 } from "lucide-react";
 import {
   useGetAllSensorDataQuery,
@@ -29,8 +26,16 @@ import {
 } from "../../services/api";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
+import FilterPills from "../../components/common/FilterPills";
+import DateRangeFilterBar from "../../components/common/DateRangeFilterBar";
 
 const CO2_CHART_LABEL = "CO\u2082 (ppm)";
+
+const ANALYTICS_PERIOD_OPTIONS = [
+  { value: "7d", label: "7 days" },
+  { value: "30d", label: "30 days" },
+  { value: "90d", label: "90 days" },
+];
 
 ChartJS.register(
   CategoryScale,
@@ -382,52 +387,26 @@ function Analytics() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Analytics
         </h1>
-        <div className="flex gap-2">
-          {["7d", "30d", "90d"].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                period === p
-                  ? "bg-eco-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {p === "7d" ? "7 Days" : p === "30d" ? "30 Days" : "90 Days"}
-            </button>
-          ))}
-        </div>
+        <FilterPills
+          ariaLabel="Statistics window"
+          options={ANALYTICS_PERIOD_OPTIONS}
+          value={period}
+          onChange={setPeriod}
+          className="w-full sm:w-auto"
+        />
       </div>
 
-      {/* Date Filter */}
-      <div className="flex flex-wrap items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <Calendar className="h-5 w-5 text-gray-500" />
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => setStartDate(date)}
-          placeholderText="Start Date"
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
-        />
-        <span className="text-gray-500">to</span>
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => setEndDate(date)}
-          placeholderText="End Date"
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
-        />
-        {(startDate || endDate) && (
-          <button
-            onClick={clearDateFilter}
-            className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 text-sm"
-          >
-            Clear Filter
-          </button>
-        )}
-      </div>
+      <DateRangeFilterBar
+        startDate={startDate}
+        endDate={endDate}
+        onStartChange={setStartDate}
+        onEndChange={setEndDate}
+        onClear={clearDateFilter}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statsCards.map((stat) => (
