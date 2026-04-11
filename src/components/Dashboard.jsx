@@ -131,11 +131,14 @@ function Dashboard() {
     }
   }, [sensorData]);
 
-  // Connect to Socket.io on mount
+  // Connect to Socket.io on mount (skipped when VITE_ENABLE_SOCKET=0 — see src/services/socket.js)
   useEffect(() => {
     if (token) {
       try {
         const socket = connectSocket(token);
+        if (!socket) {
+          return undefined;
+        }
 
         if (user?.id) {
           socket.emit("join-user", user.id);

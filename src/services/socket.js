@@ -1,35 +1,63 @@
 // src/services/socket.js
-import io from 'socket.io-client';
+import { io } from "socket.io-client";
 
 let socket = null;
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
+
+/** Set to "1" to allow WebSocket after connect (faster when it works; Chrome logs failed wss on bad proxies). */
+const allowSocketUpgrade =
+  import.meta.env.VITE_SOCKET_USE_WEBSOCKET === "1";
+
+/** `VITE_ENABLE_SOCKET=0` — skip Socket.IO entirely (no /socket.io requests, no 404 spam in DevTools). */
+function isSocketClientEnabled() {
+  const v = import.meta.env.VITE_ENABLE_SOCKET?.trim().toLowerCase();
+  return v !== "0" && v !== "false" && v !== "off";
+}
 
 export const connectSocket = (token) => {
-    if (socket && socket.connected) {
-        return socket;
+  if (!isSocketClientEnabled()) {
+    disconnectSocket();
+    return null;
+  }
+
+  if (socket?.connected) {
+    return socket;
+  }
+
+  if (socket) {
+    disconnectSocket();
+  }
+
+  socket = io(SOCKET_URL, {
+    auth: { token },
+    transports: allowSocketUpgrade ? ["polling", "websocket"] : ["polling"],
+    upgrade: allowSocketUpgrade,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
+    reconnectionDelayMax: 10000,
+    timeout: 20000,
+  });
+
+  // 404 / CORS on every poll shows once per error; stop retrying after first failure to limit console noise.
+  socket.once("connect_error", () => {
+    try {
+      socket?.io?.reconnection(false);
+    } catch {
+      /* ignore */
     }
+  });
 
-    socket = io(SOCKET_URL, {
-        auth: { token },
-        transports: ['websocket', 'polling'], // Add polling as fallback
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 20000,
-    });
-
-    return socket;
+  return socket;
 };
 
-export const getSocket = () => {
-    return socket;
-};
+export const getSocket = () => socket;
 
 export const disconnectSocket = () => {
-    if (socket) {
-        socket.disconnect();
-        socket = null;
-    }
+  if (socket) {
+    socket.removeAllListeners();
+    socket.disconnect();
+    socket = null;
+  }
 };
