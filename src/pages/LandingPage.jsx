@@ -331,12 +331,16 @@ const LandingPage = () => {
                       Updated every {liveData.interval_seconds} seconds
                     </div>
                     <div className="text-xs opacity-60 mt-1">
-                      Last update: {liveData.last_updated.toLocaleTimeString()}
+                      Last update:{" "}
+                      {liveData.last_updated.toLocaleString(undefined, {
+                        dateStyle: "short",
+                        timeStyle: "medium",
+                      })}
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Real-time data from Nyagatare Wetland Site
+                  Real-time data from Nyabugogo wetland
                 </div>
               </div>
             </motion.div>
