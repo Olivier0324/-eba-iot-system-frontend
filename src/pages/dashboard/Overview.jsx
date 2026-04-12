@@ -1,5 +1,5 @@
 // src/pages/dashboard/Overview.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Line, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -69,33 +69,33 @@ function Overview() {
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
       const filteredData = filterDataByDate(sensorData);
-      setRecentReadings(filteredData.slice(0, 100));
-      setLatestReading(filteredData[0]);
+      setRecentReadings(filteredData);
+      const newestFirst = [...filteredData].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+      );
+      setLatestReading(newestFirst[0] ?? null);
       setCurrentPage(0);
     }
   }, [sensorData, startDate, endDate]);
 
-  // Calculate averages (handle NaN)
-  const calculateAvg = (values) => {
-    const validValues = values.filter((v) => v != null && !isNaN(v) && v !== 0);
-    if (validValues.length === 0) return "--";
-    return (
-      validValues.reduce((sum, d) => sum + d, 0) / validValues.length
-    ).toFixed(1);
+  /** Mean across all filtered rows; includes numeric 0 (important for soil/water). */
+  const meanField = (rows, key) => {
+    if (!rows?.length) return "--";
+    const nums = rows
+      .map((r) => r[key])
+      .filter((v) => v != null && v !== "" && !Number.isNaN(Number(v)))
+      .map(Number);
+    if (!nums.length) return "--";
+    return (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1);
   };
 
-  const avgTemp = calculateAvg(recentReadings.map((d) => d.temperature));
-  const avgHumidity = calculateAvg(recentReadings.map((d) => d.humidity));
+  const avgTemp = meanField(recentReadings, "temperature");
+  const avgHumidity = meanField(recentReadings, "humidity");
+  const co2Mean = meanField(recentReadings, "co2_ppm");
   const avgCO2 =
-    recentReadings.length > 0
-      ? Math.round(calculateAvg(recentReadings.map((d) => d.co2_ppm)))
-      : "--";
-  const avgSoil = calculateAvg(
-    recentReadings.map((d) => d.soil_moisture_percent),
-  );
-  const avgWater = calculateAvg(
-    recentReadings.map((d) => d.water_level_percent),
-  );
+    co2Mean === "--" ? "--" : String(Math.round(Number(co2Mean)));
+  const avgSoil = meanField(recentReadings, "soil_moisture_percent");
+  const avgWater = meanField(recentReadings, "water_level_percent");
 
   const stats = [
     {
@@ -173,12 +173,24 @@ function Overview() {
     },
   ];
 
-  // Prepare chart data - NOW INCLUDES SOIL AND WATER
   const validReadings = recentReadings.filter(
     (d) => d.temperature != null && d.humidity != null,
   );
 
-  const chartLabels = validReadings.slice(0, 30).map((d) =>
+  const offset = currentPage * itemsPerPage;
+  const paginatedReadings = validReadings.slice(offset, offset + itemsPerPage);
+  const totalPages = Math.ceil(validReadings.length / itemsPerPage);
+
+  /** Same rows as the readings table page, oldest → newest on the time axis. */
+  const chartReadings = useMemo(
+    () =>
+      [...paginatedReadings].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+      ),
+    [paginatedReadings],
+  );
+
+  const chartLabels = chartReadings.map((d) =>
     new Date(d.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -190,7 +202,7 @@ function Overview() {
     datasets: [
       {
         label: "Temperature (°C)",
-        data: validReadings.slice(0, 30).map((d) => d.temperature ?? 0),
+        data: chartReadings.map((d) => d.temperature ?? 0),
         borderColor: "#2E7D32",
         backgroundColor: "rgba(46, 125, 50, 0.1)",
         tension: 0.4,
@@ -200,7 +212,7 @@ function Overview() {
       },
       {
         label: "Humidity (%)",
-        data: validReadings.slice(0, 30).map((d) => d.humidity ?? 0),
+        data: chartReadings.map((d) => d.humidity ?? 0),
         borderColor: "#2E6B9E",
         backgroundColor: "rgba(46, 107, 158, 0.1)",
         tension: 0.4,
@@ -210,9 +222,7 @@ function Overview() {
       },
       {
         label: "Soil Moisture (%)",
-        data: validReadings
-          .slice(0, 30)
-          .map((d) => d.soil_moisture_percent ?? 0),
+        data: chartReadings.map((d) => d.soil_moisture_percent ?? 0),
         borderColor: "#D4A017",
         backgroundColor: "rgba(212, 160, 23, 0.1)",
         tension: 0.4,
@@ -222,7 +232,7 @@ function Overview() {
       },
       {
         label: "Water Level (%)",
-        data: validReadings.slice(0, 30).map((d) => d.water_level_percent ?? 0),
+        data: chartReadings.map((d) => d.water_level_percent ?? 0),
         borderColor: "#1E88E5",
         backgroundColor: "rgba(30, 136, 229, 0.1)",
         tension: 0.4,
@@ -317,13 +327,9 @@ function Overview() {
     },
   };
 
-  const offset = currentPage * itemsPerPage;
-  const paginatedReadings = validReadings.slice(offset, offset + itemsPerPage);
-  const totalPages = Math.ceil(validReadings.length / itemsPerPage);
-
-const handlePageClick = (page) => {
-  setCurrentPage(page);
-};
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
 
   // Clear date filter
   const clearDateFilter = () => {
@@ -401,10 +407,16 @@ const handlePageClick = (page) => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Environmental Trends
-          </h2>
-          {validReadings.length > 0 ? (
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Environmental Trends
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Chart matches the current page of &ldquo;Recent readings&rdquo;
+              below (same time window).
+            </p>
+          </div>
+          {chartReadings.length > 0 ? (
             <div className="h-96">
               <Line data={chartData} options={chartOptions} />
             </div>

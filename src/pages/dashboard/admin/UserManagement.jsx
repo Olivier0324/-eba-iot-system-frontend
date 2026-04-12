@@ -30,6 +30,35 @@ import {
   AlertCircle,
 } from "lucide-react";
 import ModalShell from "../../../components/common/ModalShell";
+import {
+  dashboardInputClass,
+  dashboardSelectClass,
+  modalCloseButtonClass,
+  modalPrimaryButtonClass,
+  modalSecondaryButtonClass,
+} from "../../../components/common/modalStyles";
+
+/** API may omit isActive or send string/number; normalize for UI and toggles. */
+function parseUserActive(value) {
+  if (value === true || value === "true" || value === 1 || value === "1") {
+    return true;
+  }
+  if (value === false || value === "false" || value === 0 || value === "0") {
+    return false;
+  }
+  return null;
+}
+
+function getRoleDotClass(role) {
+  switch (role) {
+    case "admin":
+      return "bg-red-500 dark:bg-red-400";
+    case "manager":
+      return "bg-purple-500 dark:bg-purple-400";
+    default:
+      return "bg-blue-500 dark:bg-blue-400";
+  }
+}
 
 const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -220,7 +249,7 @@ const UserManagement = () => {
       email: user.email,
       password: "",
       role: user.role,
-      isActive: user.isActive,
+      isActive: parseUserActive(user.isActive) ?? true,
     });
     setFormErrors({});
     setShowModal(true);
@@ -246,17 +275,6 @@ const UserManagement = () => {
     }
   };
 
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case "admin":
-        return "bg-gradient-to-r from-red-500 to-red-600 text-white";
-      case "manager":
-        return "bg-gradient-to-r from-purple-500 to-purple-600 text-white";
-      default:
-        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white";
-    }
-  };
-
   if (isLoading && currentPage === 0) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -278,12 +296,13 @@ const UserManagement = () => {
           </p>
         </div>
         <button
+          type="button"
           onClick={() => {
             setEditingUser(null);
             resetForm();
             setShowModal(true);
           }}
-          className="px-4 py-2 bg-gradient-to-r from-eco-600 to-eco-700 text-white rounded-xl hover:from-eco-700 hover:to-eco-800 transition-all duration-200 flex items-center gap-2 shadow-sm"
+          className="inline-flex items-center gap-2 rounded-xl bg-eco-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-eco-700 focus:outline-none focus:ring-2 focus:ring-eco-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
         >
           <Plus size={18} />
           Add User
@@ -310,7 +329,7 @@ const UserManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Active Users</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {stats.active}
                 </p>
               </div>
@@ -323,7 +342,7 @@ const UserManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Inactive Users</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {stats.inactive}
                 </p>
               </div>
@@ -336,7 +355,7 @@ const UserManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Administrators</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {stats.byRole?.admin || 0}
                 </p>
               </div>
@@ -361,7 +380,7 @@ const UserManagement = () => {
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-eco-500 dark:bg-gray-800"
+              className={`pl-10 pr-4 ${dashboardInputClass}`}
             />
           </div>
         </div>
@@ -375,7 +394,7 @@ const UserManagement = () => {
               setRoleFilter(e.target.value);
               setCurrentPage(0);
             }}
-            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-eco-500 dark:bg-gray-800"
+            className={`min-w-[10.5rem] ${dashboardSelectClass}`}
           >
             <option value="">All Roles</option>
             <option value="admin">Admin</option>
@@ -393,7 +412,7 @@ const UserManagement = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(0);
             }}
-            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-eco-500 dark:bg-gray-800"
+            className={`min-w-[10.5rem] ${dashboardSelectClass}`}
           >
             <option value="">All Status</option>
             <option value="true">Active</option>
@@ -430,25 +449,25 @@ const UserManagement = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Last Login
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Created
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Actions
                 </th>
               </tr>
@@ -483,7 +502,9 @@ const UserManagement = () => {
                 </tr>
               )}
               {!isFetching &&
-                users.map((user) => (
+                users.map((user) => {
+                  const activeState = parseUserActive(user.isActive);
+                  return (
                   <tr
                     key={user._id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -507,46 +528,54 @@ const UserManagement = () => {
                       {user.email}
                     </td>
                     <td className="px-6 py-4">
-                      <select
-                        value={user.role}
-                        onChange={(e) =>
-                          handleChangeRole(
-                            user._id,
-                            e.target.value,
-                            user.username,
-                          )
-                        }
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(
-                          user.role,
-                        )} border-0 focus:ring-2 focus:ring-eco-500 cursor-pointer`}
-                      >
-                        <option value="admin" className="text-gray-900">
-                          Admin
-                        </option>
-                        <option value="manager" className="text-gray-900">
-                          Manager
-                        </option>
-                        <option value="user" className="text-gray-900">
-                          User
-                        </option>
-                      </select>
+                      <div className="flex max-w-[12rem] items-center gap-2">
+                        <span
+                          className={`h-2 w-2 shrink-0 rounded-full ${getRoleDotClass(
+                            user.role,
+                          )}`}
+                          aria-hidden
+                        />
+                        <select
+                          value={user.role}
+                          onChange={(e) =>
+                            handleChangeRole(
+                              user._id,
+                              e.target.value,
+                              user.username,
+                            )
+                          }
+                          className={`${dashboardSelectClass} cursor-pointer text-xs`}
+                          aria-label={`Change role for ${user.username}`}
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="manager">Manager</option>
+                          <option value="user">User</option>
+                        </select>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <button
+                        type="button"
                         onClick={() =>
                           handleToggleStatus(
                             user._id,
-                            user.isActive,
+                            activeState === true,
                             user.username,
                           )
                         }
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          user.isActive
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        } transition-colors`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+                          activeState === true
+                            ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-200 dark:hover:bg-green-900/60"
+                            : activeState === false
+                              ? "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                              : "bg-amber-100 text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
+                        }`}
                       >
-                        {user.isActive ? "Active" : "Inactive"}
+                        {activeState === true
+                          ? "Active"
+                          : activeState === false
+                            ? "Inactive"
+                            : "Unknown"}
                       </button>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
@@ -578,7 +607,8 @@ const UserManagement = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+                })}
             </tbody>
           </table>
         </div>
@@ -645,21 +675,23 @@ const UserManagement = () => {
         onClose={() => setShowModal(false)}
         maxWidthClass="max-w-md"
       >
-        <div className="bg-white dark:bg-gray-800 rounded-2xl w-full p-6 my-8 shadow-2xl border border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center mb-4">
+        <div className="p-6">
+            <div className="mb-4 flex items-start justify-between gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingUser ? "Edit User" : "Add New User"}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {editingUser
                     ? "Update user information"
                     : "Create a new system user"}
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className={modalCloseButtonClass}
+                aria-label="Close"
               >
                 <X size={20} />
               </button>
@@ -675,11 +707,11 @@ const UserManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
                   }
-                  className={`w-full px-4 py-2 rounded-xl border ${
+                  className={`${dashboardInputClass} ${
                     formErrors.username
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-200 dark:border-gray-700 focus:ring-eco-500"
-                  } focus:outline-none focus:ring-2 dark:bg-gray-900 transition-colors`}
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }`}
                   required
                 />
                 {formErrors.username && (
@@ -698,11 +730,11 @@ const UserManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={`w-full px-4 py-2 rounded-xl border ${
+                  className={`${dashboardInputClass} ${
                     formErrors.email
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-200 dark:border-gray-700 focus:ring-eco-500"
-                  } focus:outline-none focus:ring-2 dark:bg-gray-900 transition-colors`}
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }`}
                   required
                 />
                 {formErrors.email && (
@@ -723,11 +755,11 @@ const UserManagement = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      className={`w-full px-4 py-2 rounded-xl border ${
+                      className={`${dashboardInputClass} pr-10 ${
                         formErrors.password
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-gray-200 dark:border-gray-700 focus:ring-eco-500"
-                      } focus:outline-none focus:ring-2 dark:bg-gray-900 pr-10 transition-colors`}
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                          : ""
+                      }`}
                       required={!editingUser}
                       minLength={6}
                     />
@@ -758,7 +790,7 @@ const UserManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value })
                   }
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-eco-500 dark:bg-gray-900"
+                  className={dashboardSelectClass}
                 >
                   <option value="user">User</option>
                   <option value="manager">Manager</option>
@@ -782,24 +814,21 @@ const UserManagement = () => {
                   Active (user can login)
                 </label>
               </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 bg-gradient-to-r from-eco-600 to-eco-700 text-white rounded-xl hover:from-eco-700 hover:to-eco-800 transition-all duration-200 flex items-center justify-center gap-2 font-medium"
-                >
+              <div className="flex gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+                <button type="submit" className={modalPrimaryButtonClass}>
                   <Check size={16} />
                   {editingUser ? "Update User" : "Create User"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className={modalSecondaryButtonClass}
                 >
                   Cancel
                 </button>
               </div>
             </form>
-          </div>
+        </div>
       </ModalShell>
     </div>
   );

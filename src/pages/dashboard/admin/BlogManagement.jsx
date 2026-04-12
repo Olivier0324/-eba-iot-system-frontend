@@ -23,6 +23,11 @@ import {
 } from "lucide-react";
 import Pagination from "../../../components/common/Pagination";
 import ModalShell from "../../../components/common/ModalShell";
+import {
+  modalCloseButtonClass,
+  modalPrimaryButtonClass,
+  modalSecondaryButtonClass,
+} from "../../../components/common/modalStyles";
 
 const BlogManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -361,7 +366,6 @@ const BlogManagement = () => {
         onClose={() => setShowModal(false)}
         maxWidthClass="max-w-3xl"
       >
-        <div className="bg-white dark:bg-gray-800 rounded-2xl w-full my-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
@@ -380,8 +384,10 @@ const BlogManagement = () => {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className={modalCloseButtonClass}
+                aria-label="Close"
               >
                 <X size={20} />
               </button>
@@ -594,23 +600,19 @@ const BlogManagement = () => {
 
               {/* Form Actions */}
               <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-eco-600 text-white rounded-xl hover:bg-eco-700 transition-all flex items-center justify-center gap-2 font-medium shadow-sm hover:shadow-md transform active:scale-[0.98]"
-                >
+                <button type="submit" className={modalPrimaryButtonClass}>
                   <Check size={16} />
                   {editingBlog ? "Update Blog" : "Create Blog"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium"
+                  className={modalSecondaryButtonClass}
                 >
                   Cancel
                 </button>
               </div>
             </form>
-          </div>
       </ModalShell>
     </div>
   );

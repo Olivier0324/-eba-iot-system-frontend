@@ -40,6 +40,21 @@ function escapeCsvCell(value) {
   return s;
 }
 
+/** Table placeholder for missing numeric fields (avoid "N/A" noise). */
+const MISSING = "\u2014";
+
+function isNumericSensorValue(v) {
+  if (v === null || v === undefined || v === "") return false;
+  const n = Number(v);
+  return !Number.isNaN(n);
+}
+
+function rowKey(reading, idx) {
+  const id = reading?._id ?? reading?.id;
+  if (id != null) return String(id);
+  return `${reading?.timestamp ?? "row"}-${idx}`;
+}
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -63,13 +78,15 @@ function Sensors() {
 
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
-      // Keep every API row (export + table); sort oldest → newest for stable CSV/charts.
+      // Oldest → newest: stable ordering for charts and CSV export.
       const sorted = [...sensorData].sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
       );
       setSensorReadings(sorted);
+      setCurrentPage(0);
     } else {
       setSensorReadings([]);
+      setCurrentPage(0);
     }
   }, [sensorData]);
 
@@ -122,39 +139,66 @@ function Sensors() {
     ...metrics.map((m) => ({ value: m.key, label: m.pillLabel })),
   ];
 
-  const validForChart = useMemo(
-    () => sensorReadings.slice(-100),
+  /** Newest-first for the log table so each pagination page is a contiguous time window. */
+  const readingsNewestFirst = useMemo(
+    () =>
+      [...sensorReadings].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+      ),
     [sensorReadings],
   );
-  const labels = validForChart.map((d) =>
-    format(new Date(d.timestamp), "MM/dd HH:mm")
+
+  const offset = currentPage * itemsPerPage;
+  const paginatedReadings = readingsNewestFirst.slice(
+    offset,
+    offset + itemsPerPage,
+  );
+  const totalPages = Math.ceil(sensorReadings.length / itemsPerPage);
+
+  /** Chart uses the same rows as the table page, oldest → newest on the X axis. */
+  const chartPageReadingsChrono = useMemo(
+    () =>
+      [...paginatedReadings].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+      ),
+    [paginatedReadings],
   );
 
-  const chartData = {
-    labels,
-    datasets:
-      selectedMetric === "all"
-        ? metrics.map((metric) => ({
-            label: metric.label,
-            data: validForChart.map((d) => d[metric.key] ?? 0),
-            borderColor: metric.color,
-            backgroundColor: `${metric.color}20`,
-            tension: 0.4,
-            fill: false,
-            pointRadius: 1,
-          }))
-        : [
-            {
-              label: metrics.find((m) => m.key === selectedMetric)?.label,
-              data: validForChart.map((d) => d[selectedMetric] ?? 0),
-              borderColor: "#2E7D32",
-              backgroundColor: "#2E7D3220",
+  const chartLabels = chartPageReadingsChrono.map((d) =>
+    format(new Date(d.timestamp), "MM/dd HH:mm"),
+  );
+
+  const chartData = useMemo(
+    () => ({
+      labels: chartLabels,
+      datasets:
+        selectedMetric === "all"
+          ? metrics.map((metric) => ({
+              label: metric.label,
+              data: chartPageReadingsChrono.map((d) => d[metric.key] ?? 0),
+              borderColor: metric.color,
+              backgroundColor: `${metric.color}20`,
               tension: 0.4,
-              fill: true,
-              pointRadius: 2,
-            },
-          ],
-  };
+              fill: false,
+              pointRadius: 1,
+            }))
+          : [
+              {
+                label: metrics.find((m) => m.key === selectedMetric)?.label,
+                data: chartPageReadingsChrono.map(
+                  (d) => d[selectedMetric] ?? 0,
+                ),
+                borderColor: "#2E7D32",
+                backgroundColor: "#2E7D3220",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 2,
+              },
+            ],
+    }),
+    // metrics is defined in render but is static configuration
+    [chartLabels, chartPageReadingsChrono, selectedMetric],
+  );
 
   const chartOptions = {
     responsive: true,
@@ -254,10 +298,6 @@ function Sensors() {
     URL.revokeObjectURL(url);
   };
 
-  const offset = currentPage * itemsPerPage;
-  const paginatedReadings = sensorReadings.slice(offset, offset + itemsPerPage);
-  const totalPages = Math.ceil(sensorReadings.length / itemsPerPage);
-
   const handlePageClick = (page) => {
     setCurrentPage(page);
   };
@@ -270,23 +310,30 @@ function Sensors() {
         </h1>
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
           >
             <RefreshCw
               size={18}
-              className={isRefreshing ? "animate-spin" : ""}
+              className={`shrink-0 text-gray-700 dark:text-gray-200 ${isRefreshing ? "animate-spin" : ""}`}
             />
-            <span className="text-sm">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            <span className="text-sm font-medium">
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </span>
           </button>
           <button
+            type="button"
             onClick={() => void exportCSV()}
             disabled={!sensorReadings.length || isExporting}
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl px-4 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
           >
-            <Download size={18} />
-            <span className="text-sm">
+            <Download
+              size={18}
+              className="shrink-0 text-gray-700 dark:text-gray-200"
+            />
+            <span className="text-sm font-medium">
               {isExporting ? "Exporting…" : "Export CSV"}
             </span>
           </button>
@@ -294,6 +341,10 @@ function Sensors() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          Chart uses the same rows as the current table page below (oldest to
+          newest on the horizontal axis).
+        </p>
         <div className="mb-6 overflow-x-auto pb-1 -mb-1">
           <FilterPills
             ariaLabel="Sensor metric"
@@ -349,38 +400,46 @@ function Sensors() {
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {paginatedReadings.map((reading, idx) => (
                 <tr
-                  key={idx}
+                  key={rowKey(reading, idx)}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                     {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.temperature != null && !Number.isNaN(reading.temperature)
+                  <td
+                    className={`px-4 py-3 text-sm ${isNumericSensorValue(reading.temperature) ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+                  >
+                    {isNumericSensorValue(reading.temperature)
                       ? `${Number(reading.temperature).toFixed(1)}°C`
-                      : "N/A"}
+                      : MISSING}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.humidity != null && !Number.isNaN(reading.humidity)
+                  <td
+                    className={`px-4 py-3 text-sm ${isNumericSensorValue(reading.humidity) ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+                  >
+                    {isNumericSensorValue(reading.humidity)
                       ? `${Number(reading.humidity).toFixed(1)}%`
-                      : "N/A"}
+                      : MISSING}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.co2_ppm != null && !Number.isNaN(reading.co2_ppm)
-                      ? `${reading.co2_ppm} ppm`
-                      : "N/A"}
+                  <td
+                    className={`px-4 py-3 text-sm ${isNumericSensorValue(reading.co2_ppm) ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+                  >
+                    {isNumericSensorValue(reading.co2_ppm)
+                      ? `${Number(reading.co2_ppm)} ppm`
+                      : MISSING}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.soil_moisture_percent !== undefined &&
-                    reading.soil_moisture_percent !== null
-                      ? `${reading.soil_moisture_percent}%`
-                      : "N/A"}
+                  <td
+                    className={`px-4 py-3 text-sm ${isNumericSensorValue(reading.soil_moisture_percent) ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+                  >
+                    {isNumericSensorValue(reading.soil_moisture_percent)
+                      ? `${Number(reading.soil_moisture_percent)}%`
+                      : MISSING}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.water_level_percent !== undefined &&
-                    reading.water_level_percent !== null
-                      ? `${reading.water_level_percent}%`
-                      : "N/A"}
+                  <td
+                    className={`px-4 py-3 text-sm ${isNumericSensorValue(reading.water_level_percent) ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+                  >
+                    {isNumericSensorValue(reading.water_level_percent)
+                      ? `${Number(reading.water_level_percent)}%`
+                      : MISSING}
                   </td>
                 </tr>
               ))}

@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
+import { modalPanelClass } from "./modalStyles";
 
 /**
  * Shared modal overlay + panel shell for dashboard dialogs.
  * Backdrop click and Escape close when onClose is provided.
+ * Children are wrapped in a consistent card (remove duplicate outer panels).
  */
 function ModalShell({
   open,
@@ -10,6 +12,8 @@ function ModalShell({
   children,
   maxWidthClass = "max-w-md",
   className = "",
+  /** Set false only if you render your own full-width panel inside. */
+  wrapPanel = true,
 }) {
   useEffect(() => {
     if (!open || !onClose) return;
@@ -32,10 +36,14 @@ function ModalShell({
       }}
     >
       <div
-        className={`w-full ${maxWidthClass} ${className}`}
+        className={`w-full ${maxWidthClass} my-8 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        {wrapPanel ? (
+          <div className={modalPanelClass}>{children}</div>
+        ) : (
+          children
+        )}
       </div>
     </div>
   );

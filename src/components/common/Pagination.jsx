@@ -58,7 +58,10 @@ const Pagination = ({
 
         {getPageNumbers().map((page, index) =>
           page === "..." ? (
-            <span key={`dots-${index}`} className="px-3 py-1.5 text-gray-500">
+            <span
+              key={`dots-${index}`}
+              className="px-3 py-1.5 text-gray-500 dark:text-gray-400"
+            >
               ...
             </span>
           ) : (
