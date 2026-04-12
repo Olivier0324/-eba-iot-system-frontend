@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import {
   getUserRole,
   isViewOnlyUser,
-  canAccessControlPanel,
+  canAccessDeviceControl,
   canManageUsers,
   canAccessContentAdmin,
 } from "../utils/roles";
@@ -15,7 +15,7 @@ export function usePermissions() {
       user,
       role: getUserRole(user),
       isViewOnly: isViewOnlyUser(user),
-      canControl: canAccessControlPanel(user),
+      canControl: canAccessDeviceControl(user),
       canManageUsers: canManageUsers(user),
       canAccessContentAdmin: canAccessContentAdmin(user),
     }),

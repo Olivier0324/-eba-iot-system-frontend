@@ -13,7 +13,6 @@ import {
   Phone,
   MapPin,
   Linkedin,
-  Github,
   Twitter,
   ArrowRight,
   Droplets,
@@ -428,40 +427,53 @@ const LandingPage = () => {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-800"
+              className="rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
             >
-              <div className="bg-linear-to-br from-eco-50 to-ocean-50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              {/* Same surface tone in light and dark so label/value colors stay readable (no light panel + light text). */}
+              <div className="rounded-xl p-6 bg-gray-50 dark:bg-gray-900/80 border border-gray-100 dark:border-gray-600">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Project Information
                 </h3>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between pb-2 border-b border-gray-200">
-                    <span className="text-gray-500 dark:text-gray-400">Institution:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4 pb-2 border-b border-gray-200 dark:border-gray-600">
+                    <span className="shrink-0 text-gray-600 dark:text-gray-300 font-medium">
+                      Institution:
+                    </span>
+                    <span className="text-gray-900 dark:text-gray-100 sm:text-right font-medium">
                       University of Rwanda, College of Science and Technology
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-gray-200">
-                    <span className="text-gray-500 dark:text-gray-400">School:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4 pb-2 border-b border-gray-200 dark:border-gray-600">
+                    <span className="shrink-0 text-gray-600 dark:text-gray-300 font-medium">
+                      School:
+                    </span>
+                    <span className="text-gray-900 dark:text-gray-100 sm:text-right font-medium">
                       School of ICT
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-gray-200">
-                    <span className="text-gray-500 dark:text-gray-400">Department:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4 pb-2 border-b border-gray-200 dark:border-gray-600">
+                    <span className="shrink-0 text-gray-600 dark:text-gray-300 font-medium">
+                      Department:
+                    </span>
+                    <span className="text-gray-900 dark:text-gray-100 sm:text-right font-medium">
                       Information Systems
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-gray-200">
-                    <span className="text-gray-500 dark:text-gray-400">Supervisor:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4 pb-2 border-b border-gray-200 dark:border-gray-600">
+                    <span className="shrink-0 text-gray-600 dark:text-gray-300 font-medium">
+                      Supervisor:
+                    </span>
+                    <span className="text-gray-900 dark:text-gray-100 sm:text-right font-medium">
                       Dr. Martin KURADUSENGE
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Year:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-medium">2026</span>
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4">
+                    <span className="shrink-0 text-gray-600 dark:text-gray-300 font-medium">
+                      Year:
+                    </span>
+                    <span className="text-gray-900 dark:text-gray-100 sm:text-right font-medium">
+                      2026
+                    </span>
                   </div>
                 </div>
               </div>
@@ -474,7 +486,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-800"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700"
             >
               <Target className="h-12 w-12 text-eco-600 mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -492,7 +504,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-800"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700"
             >
               <Award className="h-12 w-12 text-ocean-600 mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">

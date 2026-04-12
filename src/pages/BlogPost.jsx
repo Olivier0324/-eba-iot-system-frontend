@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
+import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { Calendar, User, ArrowLeft, Clock, Tag } from "lucide-react";
 import { useGetBlogBySlugQuery } from "../services/api";
 import { format } from "date-fns";
@@ -19,13 +20,16 @@ const BlogPost = () => {
   // If post not found or error
   if (!isLoading && (error || !post)) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggleButton />
+        </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Post Not Found
             </h1>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               The blog post you're looking for doesn't exist or has been
               removed.
             </p>
@@ -44,7 +48,10 @@ const BlogPost = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggleButton />
+        </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
         </div>
@@ -66,7 +73,7 @@ const BlogPost = () => {
         return (
           <h2
             key={index}
-            className="text-2xl font-bold mb-4 mt-8 text-gray-900"
+            className="text-2xl font-bold mb-4 mt-8 text-gray-900 dark:text-white"
           >
             {paragraph.substring(3)}
           </h2>
@@ -76,7 +83,7 @@ const BlogPost = () => {
         return (
           <h3
             key={index}
-            className="text-xl font-semibold mb-3 mt-6 text-gray-900"
+            className="text-xl font-semibold mb-3 mt-6 text-gray-900 dark:text-white"
           >
             {paragraph.substring(4)}
           </h3>
@@ -92,7 +99,7 @@ const BlogPost = () => {
         return (
           <ul key={index} className="list-disc pl-6 mb-4 space-y-2">
             {listItems.map((item, i) => (
-              <li key={i} className="text-gray-700">
+              <li key={i} className="text-gray-700 dark:text-gray-300">
                 {item}
               </li>
             ))}
@@ -103,7 +110,7 @@ const BlogPost = () => {
       // Regular paragraph
       if (paragraph.trim()) {
         return (
-          <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+          <p key={index} className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
             {paragraph}
           </p>
         );
@@ -114,7 +121,10 @@ const BlogPost = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggleButton />
+      </div>
       <div className="grow pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}
@@ -128,7 +138,7 @@ const BlogPost = () => {
           {/* Back Button */}
           <button
             onClick={() => navigate("/blog")}
-            className="mb-8 flex items-center gap-2 text-gray-600 hover:text-eco-600 transition-colors font-medium"
+            className="mb-8 flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors font-medium"
           >
             <ArrowLeft size={20} />
             Back to Blog
@@ -152,25 +162,25 @@ const BlogPost = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="inline-block px-3 py-1 rounded-full bg-eco-100 text-eco-700 text-xs font-bold">
+              <span className="inline-block px-3 py-1 rounded-full bg-eco-100 dark:bg-eco-900/40 text-eco-700 dark:text-eco-300 text-xs font-bold">
                 {post.category || "Uncategorized"}
               </span>
               {post.tags &&
                 post.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+                    className="inline-block px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs"
                   >
                     #{tag}
                   </span>
                 ))}
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
               {post.title}
             </h1>
 
             {/* Meta Info */}
-            <div className="flex flex-wrap items-center gap-6 text-gray-500 text-sm">
+            <div className="flex flex-wrap items-center gap-6 text-gray-500 dark:text-gray-400 text-sm">
               <div className="flex items-center gap-2">
                 <User size={18} />
                 <span>{post.author}</span>
@@ -187,21 +197,23 @@ const BlogPost = () => {
           </div>
 
           {/* Content */}
-          <article className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+          <article className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 leading-relaxed dark:prose-invert">
             {renderContent(post.content)}
           </article>
 
           {/* Tags Section */}
           {post.tags && post.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <Tag size={18} className="text-gray-400" />
-                <span className="text-sm font-medium text-gray-500">Tags:</span>
+                <Tag size={18} className="text-gray-400 dark:text-gray-500" />
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Tags:
+                </span>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((tag, idx) => (
                     <span
                       key={idx}
-                      className="text-sm text-eco-600 bg-eco-50 px-2 py-1 rounded-lg"
+                      className="text-sm text-eco-600 dark:text-eco-400 bg-eco-50 dark:bg-eco-950/40 px-2 py-1 rounded-lg"
                     >
                       #{tag}
                     </span>

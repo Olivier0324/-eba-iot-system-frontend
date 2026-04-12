@@ -199,7 +199,7 @@ export const api = createApi({
         }),
         markNotificationAsRead: builder.mutation({
             query: (id) => ({
-                url: `/notifications/${id}/read`,
+                url: `/notifications/${encodeURIComponent(String(id))}/read`,
                 method: 'PUT',
             }),
             invalidatesTags: ['Notification'],
@@ -213,7 +213,7 @@ export const api = createApi({
         }),
         deleteNotification: builder.mutation({
             query: (id) => ({
-                url: `/notifications/${id}`,
+                url: `/notifications/${encodeURIComponent(String(id))}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Notification'],

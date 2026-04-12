@@ -1,5 +1,6 @@
 // src/pages/dashboard/ControlPanel.jsx
 import React, { useState } from "react";
+import { Navigate } from "react-router-dom";
 import {
   Activity,
   Clock,
@@ -20,9 +21,11 @@ import {
   useGetDeviceStatusQuery,
   useGetIntervalPresetsQuery,
 } from "../../services/api";
+import { usePermissions } from "../../hooks/usePermissions";
 import { toast } from "react-toastify";
 
 function ControlPanel() {
+  const { canControl } = usePermissions();
   const [intervalSeconds, setIntervalSeconds] = useState(60);
   const [setInterval, { isLoading: isSetting }] = useSetIntervalMutation();
   const {
@@ -30,12 +33,16 @@ function ControlPanel() {
     isLoading: statusLoading,
     refetch,
     error: statusError,
-  } = useGetDeviceStatusQuery();
+  } = useGetDeviceStatusQuery(undefined, { skip: !canControl });
   const {
     data: presetsData,
     isLoading: presetsLoading,
     error: presetsError,
-  } = useGetIntervalPresetsQuery();
+  } = useGetIntervalPresetsQuery(undefined, { skip: !canControl });
+
+  if (!canControl) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   // Extract the actual data from the response
   const deviceStatus = deviceStatusData?.data || deviceStatusData;

@@ -7,8 +7,8 @@ import {
   BookOpen,
   Code,
   BookMarked,
-  FileText,
   HelpCircle,
+  Github,
   Eye,
   Moon,
   Sun,
@@ -16,6 +16,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 import { useTheme } from "../../context/ThemeContext";
+import {
+  API_DOCUMENTATION_URL,
+  FRONTEND_REPOSITORY_URL,
+} from "../../constants/projectLinks";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -62,14 +66,19 @@ const Navbar = () => {
 
   const resourceLinks = [
     {
-      name: "API Documentation",
+      name: "API documentation",
       icon: Code,
-      href: import.meta.env.VITE_BACKEND_URL + "/api-docs/",
+      href: API_DOCUMENTATION_URL,
+      external: true,
     },
-    { name: "Technical Blog", icon: BookMarked, href: "/blog" },
-    { name: "Research Papers", icon: FileText, href: "/research" },
-    { name: "GitHub Repository", icon: Code, href: "https://github.com/oliver0324/" },
-    { name: "Support Forum", icon: HelpCircle, href: "/support" },
+    {
+      name: "Frontend on GitHub",
+      icon: Github,
+      href: FRONTEND_REPOSITORY_URL,
+      external: true,
+    },
+    { name: "Technical Blog", icon: BookMarked, href: "/blog", external: false },
+    { name: "Support", icon: HelpCircle, href: "/support", external: false },
   ];
 
   return (
@@ -126,16 +135,31 @@ const Navbar = () => {
                 <span className="text-sm">Resources</span>
               </button>
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                {resourceLinks.map((link, idx) => (
-                  <a
-                    key={idx}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
-                  >
-                    <link.icon size={16} />
-                    {link.name}
-                  </a>
-                ))}
+                {resourceLinks.map((link) => {
+                  const itemClass =
+                    "flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors";
+                  const inner = (
+                    <>
+                      <link.icon size={16} />
+                      {link.name}
+                    </>
+                  );
+                  return link.external ? (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={itemClass}
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <Link key={link.name} to={link.href} className={itemClass}>
+                      {inner}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -183,16 +207,36 @@ const Navbar = () => {
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                 <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
               </button>
-              {resourceLinks.map((link, idx) => (
-                <a
-                  key={idx}
-                  href={link.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors"
-                >
-                  <link.icon size={18} />
-                  <span>{link.name}</span>
-                </a>
-              ))}
+              {resourceLinks.map((link) => {
+                const itemClass =
+                  "flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors";
+                const inner = (
+                  <>
+                    <link.icon size={18} />
+                    <span>{link.name}</span>
+                  </>
+                );
+                return link.external ? (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={itemClass}
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={itemClass}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {inner}
+                  </Link>
+                );
+              })}
               <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
               <Link
                 to="/dashboard"

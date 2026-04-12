@@ -17,6 +17,7 @@ import Reports from "./pages/dashboard/Reports";
 import Alerts from "./pages/dashboard/Alerts";
 import Analytics from "./pages/dashboard/Analytics";
 import ControlPanel from "./pages/dashboard/ControlPanel";
+import Notifications from "./pages/dashboard/Notifications";
 import Settings from "./pages/dashboard/Settings";
 // Resource Pages
 import Blog from "./pages/Blog";
@@ -50,6 +51,7 @@ function App() {
             <Route path="reports" element={<Reports />} />
             <Route path="alerts" element={<Alerts />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="control" element={<ControlPanel />} />
             <Route path="settings" element={<Settings />} />
             {/* Admin Only Routes */}

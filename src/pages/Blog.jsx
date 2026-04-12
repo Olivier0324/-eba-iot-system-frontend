@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
+import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { useGetAllBlogsQuery } from "../services/api";
 import { format } from "date-fns";
 
@@ -57,7 +58,10 @@ const Blog = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggleButton />
+        </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
         </div>
@@ -68,10 +72,15 @@ const Blog = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggleButton />
+        </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Failed to load blog posts</p>
+            <p className="text-red-600 dark:text-red-400 mb-4">
+              Failed to load blog posts
+            </p>
             <button
               onClick={() => refetch()}
               className="px-4 py-2 bg-eco-600 text-white rounded-lg hover:bg-eco-700 transition-colors"
@@ -86,7 +95,10 @@ const Blog = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggleButton />
+      </div>
       <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}
@@ -99,10 +111,10 @@ const Blog = () => {
 
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
               Technical Blog
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
               Insights, tutorials, and updates from the EBA System team
             </p>
           </div>
@@ -115,10 +127,10 @@ const Blog = () => {
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 pl-12 rounded-xl border border-gray-200 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none"
+                className="w-full px-4 py-3 pl-12 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-eco-500 focus:ring-2 focus:ring-eco-500/20 transition-all outline-none"
               />
               <svg
-                className="absolute left-4 top-3.5 h-5 w-5 text-gray-400"
+                className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -143,7 +155,7 @@ const Blog = () => {
                   className={`px-6 py-2 rounded-full text-sm font-semibold transition-all shadow-sm ${
                     selectedCategory === category
                       ? "bg-eco-600 text-white shadow-md transform scale-105"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600"
                   }`}
                 >
                   {category}
@@ -155,7 +167,7 @@ const Blog = () => {
           {/* Results Count */}
           {publishedBlogs.length > 0 && (
             <div className="text-center mb-6">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Showing {filteredPosts.length} of {publishedBlogs.length}{" "}
                 {publishedBlogs.length === 1 ? "post" : "posts"}
               </p>
@@ -164,7 +176,7 @@ const Blog = () => {
 
           {/* Blog Posts Grid */}
           {filteredPosts.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="max-w-md mx-auto">
                 <svg
                   className="h-16 w-16 text-gray-400 mx-auto mb-4"
@@ -179,10 +191,10 @@ const Blog = () => {
                     d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                   />
                 </svg>
-                <p className="text-gray-500 text-lg font-medium mb-2">
+                <p className="text-gray-500 dark:text-gray-300 text-lg font-medium mb-2">
                   No blog posts found
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   {publishedBlogs.length === 0
                     ? "No published blog posts available at the moment."
                     : searchQuery
@@ -209,7 +221,7 @@ const Blog = () => {
               {filteredPosts.map((post) => (
                 <article
                   key={post._id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col h-full group"
                 >
                   <div
                     className="relative h-52 overflow-hidden cursor-pointer"
@@ -234,7 +246,7 @@ const Blog = () => {
                     </div>
                   </div>
                   <div className="p-6 flex flex-col grow">
-                    <div className="flex items-center gap-2 mb-3 text-xs text-gray-500 font-medium">
+                    <div className="flex items-center gap-2 mb-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
                       <span>{post.readTime} min read</span>
                       <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                       <span>
@@ -242,20 +254,20 @@ const Blog = () => {
                       </span>
                     </div>
                     <h2
-                      className="text-xl font-bold text-gray-900 mb-3 leading-tight hover:text-eco-600 transition-colors cursor-pointer line-clamp-2"
+                      className="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-tight hover:text-eco-600 dark:hover:text-eco-400 transition-colors cursor-pointer line-clamp-2"
                       onClick={() => navigate(`/blog/${post.slug}`)}
                     >
                       {post.title}
                     </h2>
-                    <p className="text-gray-600 mb-6 line-clamp-3 grow">
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3 grow">
                       {post.excerpt}
                     </p>
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-eco-100 flex items-center justify-center text-eco-600 font-bold text-xs">
                           {post.author?.charAt(0) || "A"}
                         </div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                           {post.author}
                         </p>
                       </div>

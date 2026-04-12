@@ -16,15 +16,18 @@ export function isViewOnlyUser(user) {
   return getUserRole(user) === ROLES.USER;
 }
 
-/** Hardware / sampling interval — admin + manager only */
-export function canAccessControlPanel(user) {
-  const r = getUserRole(user);
-  return r === ROLES.ADMIN || r === ROLES.MANAGER;
+/**
+ * Device / sampling interval control — admins only.
+ * Project managers (`manager`) can use the dashboard but must not access hardware control.
+ */
+export function canAccessDeviceControl(user) {
+  return getUserRole(user) === ROLES.ADMIN;
 }
 
 /** Blog + contact messages — admin + manager */
 export function canAccessContentAdmin(user) {
-  return canAccessControlPanel(user);
+  const r = getUserRole(user);
+  return r === ROLES.ADMIN || r === ROLES.MANAGER;
 }
 
 /** User list, roles, create/delete — admin only */

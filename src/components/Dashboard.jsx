@@ -13,6 +13,7 @@ import {
 import { toast } from "react-toastify";
 import { connectSocket, disconnectSocket } from "../services/socket";
 import { useTheme } from "../context/ThemeContext";
+import { usePermissions } from "../hooks/usePermissions";
 import {
   LayoutDashboard,
   Menu,
@@ -37,20 +38,46 @@ import {
   ChevronsRight,
   Moon,
   Sun,
+  Inbox,
 } from "lucide-react";
 
 const SIDEBAR_COLLAPSED_KEY = "eba-dashboard-sidebar-collapsed";
 
-function isLikelyMongoId(id) {
-  return typeof id === "string" && /^[a-f\d]{24}$/i.test(id);
+/** Bell menu: unread only, synced with GET /notifications?isRead=false (see API docs). */
+const DROPDOWN_UNREAD_LIMIT = 15;
+
+/** BSON / JSON often ships `_id` as `{ $oid: "..." }`; REST may use `id` instead of `_id`. */
+function extractNotificationIdField(raw) {
+  if (raw == null) return "";
+  if (typeof raw === "object" && raw !== null && "$oid" in raw) {
+    return String(raw.$oid);
+  }
+  return String(raw);
+}
+
+function apiNotificationRecordId(n) {
+  return extractNotificationIdField(n?._id ?? n?.id ?? "");
+}
+
+/** `Boolean("false")` is true in JS — treat read flags literally. */
+function notificationIsRead(n) {
+  const v =
+    n.isRead !== undefined && n.isRead !== null ? n.isRead : n.read;
+  if (v === true || v === 1) return true;
+  if (typeof v === "string") {
+    const s = v.toLowerCase();
+    return s === "true" || s === "1";
+  }
+  return false;
 }
 
 function mapApiNotification(n) {
+  const id = apiNotificationRecordId(n);
   return {
-    id: n._id,
+    id,
     title: n.title || "Notification",
     message: n.message || "",
-    read: Boolean(n.isRead),
+    read: notificationIsRead(n),
     timestamp: n.createdAt ? new Date(n.createdAt) : new Date(),
     priority: n.priority,
     type: n.type,
@@ -79,8 +106,6 @@ function Dashboard() {
       return next;
     });
   };
-  /** Live socket toasts (IDs are numeric); server list uses Mongo _id strings */
-  const [localRealtime, setLocalRealtime] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [latestSensorData, setLatestSensorData] = useState(null);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -91,35 +116,31 @@ function Dashboard() {
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
   const { theme, toggleTheme } = useTheme();
+  const { canControl } = usePermissions();
 
   const { data: notifPayload, refetch: refetchNotifications } =
     useGetNotificationsQuery(
-      { page: 1, limit: 40 },
+      { page: 1, limit: DROPDOWN_UNREAD_LIMIT, isRead: false },
       { skip: !token, pollingInterval: 60000 },
     );
   const [markNotificationReadApi] = useMarkNotificationAsReadMutation();
   const [markAllNotificationsReadApi] = useMarkAllNotificationsAsReadMutation();
 
-  const apiNotifications = useMemo(
-    () => (notifPayload?.list || []).map(mapApiNotification),
-    [notifPayload],
-  );
+  /** Unread-only rows from the API, newest first (dropdown does not mix in socket-only items). */
+  const dropdownNotifications = useMemo(() => {
+    const list = (notifPayload?.list || [])
+      .map(mapApiNotification)
+      .filter((n) => String(n.id).length > 0 && !n.read);
+    return [...list].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+  }, [notifPayload]);
 
-  const mergedNotifications = useMemo(() => {
-    const merged = [...localRealtime, ...apiNotifications];
-    const seen = new Set();
-    return merged.filter((n) => {
-      const k = String(n.id);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }, [localRealtime, apiNotifications]);
-
-  const unreadCount = useMemo(
-    () => mergedNotifications.filter((n) => !n.read).length,
-    [mergedNotifications],
-  );
+  const unreadCount =
+    typeof notifPayload?.unreadCount === "number"
+      ? notifPayload.unreadCount
+      : dropdownNotifications.length;
 
   // Fetch latest sensor data
   const { data: sensorData } = useGetAllSensorDataQuery();
@@ -148,34 +169,17 @@ function Dashboard() {
           setLatestSensorData(data);
 
           if (data.temperature > 35 || data.co2_ppm > 1000) {
-            const newNotification = {
-              id: Date.now(),
-              title: "Alert: Threshold Exceeded",
-              message: `${data.temperature > 35 ? `Temperature at ${data.temperature}°C` : ""} ${data.co2_ppm > 1000 ? `CO\u2082 at ${data.co2_ppm} ppm` : ""}`,
-              type: "warning",
-              read: false,
-              timestamp: new Date(),
-              fromApi: false,
-            };
-            setLocalRealtime((prev) => [newNotification, ...prev].slice(0, 25));
-            toast.warning(newNotification.message);
+            toast.warning(
+              `${data.temperature > 35 ? `Temperature at ${data.temperature}°C` : ""} ${data.co2_ppm > 1000 ? `CO\u2082 at ${data.co2_ppm} ppm` : ""}`.trim(),
+            );
           }
         });
 
         socket.on("new-alerts", (alerts) => {
-          alerts.forEach((alert, idx) => {
-            const newNotification = {
-              id: `rt-${Date.now()}-${idx}`,
-              title: alert.title,
-              message: alert.message,
-              type: alert.severity,
-              read: false,
-              timestamp: new Date(),
-              fromApi: false,
-            };
-            setLocalRealtime((prev) => [newNotification, ...prev].slice(0, 25));
+          alerts.forEach((alert) => {
             toast.error(alert.title);
           });
+          void refetchNotifications();
         });
 
         return () => {
@@ -187,7 +191,7 @@ function Dashboard() {
         // Socket setup failed; notifications will resume on next successful connection.
       }
     }
-  }, [token, user?.id]);
+  }, [token, user?.id, refetchNotifications]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);
@@ -213,18 +217,14 @@ function Dashboard() {
   };
 
   const markNotificationAsRead = useCallback(
-    async (id) => {
-      if (isLikelyMongoId(id)) {
-        try {
-          await markNotificationReadApi(id).unwrap();
-          await refetchNotifications();
-        } catch {
-          /* ignore */
-        }
-      } else {
-        setLocalRealtime((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-        );
+    async (notif) => {
+      const sid = String(notif.id ?? "").trim();
+      if (!sid) return;
+      try {
+        await markNotificationReadApi(sid).unwrap();
+        await refetchNotifications();
+      } catch {
+        toast.error("Could not mark notification as read");
       }
     },
     [markNotificationReadApi, refetchNotifications],
@@ -235,23 +235,38 @@ function Dashboard() {
       await markAllNotificationsReadApi().unwrap();
       await refetchNotifications();
     } catch {
-      /* still clear local banners */
+      toast.error("Could not mark all notifications as read");
     }
-    setLocalRealtime((prev) => prev.map((n) => ({ ...n, read: true })));
   }, [markAllNotificationsReadApi, refetchNotifications]);
 
   const isAdmin = user?.role === "admin";
 
   // Navigation items
-  const navItems = [
-    { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Sensor Data", path: "/dashboard/sensors", icon: Database },
-    { name: "Reports", path: "/dashboard/reports", icon: FileText },
-    { name: "Alerts", path: "/dashboard/alerts", icon: AlertTriangle },
-    { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
-    { name: "Control Panel", path: "/dashboard/control", icon: Activity },
-    { name: "Settings", path: "/dashboard/settings", icon: Settings },
-  ];
+  const navItems = useMemo(
+    () => [
+      { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
+      { name: "Sensor Data", path: "/dashboard/sensors", icon: Database },
+      { name: "Reports", path: "/dashboard/reports", icon: FileText },
+      { name: "Alerts", path: "/dashboard/alerts", icon: AlertTriangle },
+      { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
+      {
+        name: "Notifications",
+        path: "/dashboard/notifications",
+        icon: Inbox,
+      },
+      ...(canControl
+        ? [
+            {
+              name: "Control Panel",
+              path: "/dashboard/control",
+              icon: Activity,
+            },
+          ]
+        : []),
+      { name: "Settings", path: "/dashboard/settings", icon: Settings },
+    ],
+    [canControl],
+  );
 
   // In Dashboard.jsx, update the adminItems array:
   const adminItems = [
@@ -312,31 +327,40 @@ function Dashboard() {
       {showNotifications && (
         <div className="md:hidden fixed inset-x-0 top-[3.25rem] z-[35] px-3 max-h-[min(70vh,calc(100vh-5rem))]">
           <div className="rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 overflow-hidden flex flex-col max-h-[min(70vh,calc(100vh-5.5rem))]">
-            <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center shrink-0">
+            <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center gap-2 shrink-0">
               <h3 className="font-semibold text-gray-900 dark:text-white">
                 Notifications
               </h3>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => void markAllAsRead()}
-                  className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  to="/dashboard/notifications"
+                  onClick={() => setShowNotifications(false)}
+                  className="text-xs font-medium text-ocean-600 dark:text-ocean-400 hover:underline"
                 >
-                  Mark all as read
-                </button>
-              )}
+                  View all
+                </Link>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void markAllAsRead()}
+                    className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+              </div>
             </div>
             <div className="overflow-y-auto flex-1 min-h-0">
-              {mergedNotifications.length === 0 ? (
+              {dropdownNotifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No notifications
+                  No unread notifications
                 </div>
               ) : (
-                mergedNotifications.map((notif) => (
+                dropdownNotifications.map((notif) => (
                   <button
                     type="button"
                     key={notif.id}
-                    onClick={() => void markNotificationAsRead(notif.id)}
+                    onClick={() => void markNotificationAsRead(notif)}
                     className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
                       !notif.read
                         ? "bg-eco-50/80 dark:bg-eco-950/25"
@@ -646,31 +670,40 @@ function Dashboard() {
               {/* Notifications Dropdown */}
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 z-50 overflow-hidden flex flex-col max-h-[min(24rem,70vh)]">
-                  <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center shrink-0">
+                  <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center gap-2 shrink-0">
                     <h3 className="font-semibold text-gray-900 dark:text-white">
                       Notifications
                     </h3>
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => void markAllAsRead()}
-                        className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        to="/dashboard/notifications"
+                        onClick={() => setShowNotifications(false)}
+                        className="text-xs font-medium text-ocean-600 dark:text-ocean-400 hover:underline"
                       >
-                        Mark all as read
-                      </button>
-                    )}
+                        View all
+                      </Link>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => void markAllAsRead()}
+                          className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="overflow-y-auto flex-1 min-h-0">
-                    {mergedNotifications.length === 0 ? (
+                    {dropdownNotifications.length === 0 ? (
                       <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No notifications
+                        No unread notifications
                       </div>
                     ) : (
-                      mergedNotifications.map((notif) => (
+                      dropdownNotifications.map((notif) => (
                         <button
                           type="button"
                           key={notif.id}
-                          onClick={() => void markNotificationAsRead(notif.id)}
+                          onClick={() => void markNotificationAsRead(notif)}
                           className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
                             !notif.read
                               ? "bg-eco-50/80 dark:bg-eco-950/25"

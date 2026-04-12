@@ -6,6 +6,7 @@ import { EyeClosed, Eye, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/api/index.js";
 import Logo from "../common/Logo.jsx";
+import ThemeToggleButton from "../common/ThemeToggleButton.jsx";
 
 function LoginForm() {
   const [loginUser, { isLoading: isMutationLoading }] = useLoginMutation();
@@ -69,7 +70,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggleButton />
+      </div>
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-eco-100 dark:border-gray-700">
         {/* Header */}
         <div className="flex justify-center">

@@ -22,15 +22,23 @@ import { toast } from "react-toastify";
 
 const LIMIT = 12;
 
-function isMongoId(id) {
-  return typeof id === "string" && /^[a-f\d]{24}$/i.test(id);
-}
-
 function rowId(n) {
   const raw = n._id ?? n.id;
   if (raw == null) return "";
   if (typeof raw === "object" && raw.$oid) return String(raw.$oid);
   return String(raw);
+}
+
+/** Match dashboard: API may send string booleans; prefer `isRead` then `read`. */
+function recordIsRead(n) {
+  const v =
+    n.isRead !== undefined && n.isRead !== null ? n.isRead : n.read;
+  if (v === true || v === 1) return true;
+  if (typeof v === "string") {
+    const s = v.toLowerCase();
+    return s === "true" || s === "1";
+  }
+  return false;
 }
 
 function Notifications() {
@@ -72,7 +80,7 @@ function Notifications() {
       : Math.max(page, hasNextPage ? page + 1 : page);
 
   const handleMarkRead = async (id) => {
-    if (!isMongoId(id)) return;
+    if (!id || typeof id !== "string") return;
     try {
       await markRead(id).unwrap();
       toast.success("Marked as read");
@@ -93,7 +101,7 @@ function Notifications() {
   };
 
   const handleDelete = async (id) => {
-    if (!isMongoId(id)) return;
+    if (!id || typeof id !== "string") return;
     if (!window.confirm("Delete this notification?")) return;
     try {
       await remove(id).unwrap();
@@ -203,7 +211,7 @@ function Notifications() {
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {list.map((n) => {
               const id = rowId(n);
-              const read = Boolean(n.isRead);
+              const read = recordIsRead(n);
               return (
                 <li
                   key={id || JSON.stringify(n)}

@@ -5,8 +5,8 @@ import { logout, setToken, setUser } from "../../services/reducers/authReducer";
 import { useVerifyOTPMutation, useResendOTPMutation } from "../../services/api";
 import { toast } from "react-toastify";
 import { Loader2, RefreshCw } from "lucide-react";
-import logo from "../../assets/eba_logo.svg";
 import Logo from "../common/Logo";
+import ThemeToggleButton from "../common/ThemeToggleButton.jsx";
 
 function VerifyForm() {
   const navigate = useNavigate();
@@ -122,13 +122,18 @@ function VerifyForm() {
     navigate("/login");
   };
 
+  const goHome = () => navigate("/");
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggleButton />
+      </div>
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-eco-100 dark:border-gray-700">
         <div className="text-center">
           <div className="flex justify-center">
-                    <Logo fn={() => navigateTo("/")} />
-                  </div>
+            <Logo fn={goHome} />
+          </div>
           <h2 className="mt-2 text-3xl font-extrabold text-eco-900 dark:text-eco-100">
             Verify Your Account
           </h2>

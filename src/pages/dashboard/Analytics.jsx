@@ -24,7 +24,7 @@ import {
   useGetAllSensorDataQuery,
   useGetAlertStatisticsQuery,
 } from "../../services/api";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import Pagination from "../../components/common/Pagination";
 import FilterPills from "../../components/common/FilterPills";
 import DateRangeFilterBar from "../../components/common/DateRangeFilterBar";
@@ -76,7 +76,7 @@ function Analytics() {
     hasWaterData: false,
   });
 
-  // Filter data by date range
+  // Filter data by custom date range (when set, this overrides the 7/30/90 window)
   const filterDataByDate = (data) => {
     if (!startDate && !endDate) return data;
     return data.filter((item) => {
@@ -88,6 +88,14 @@ function Analytics() {
       if (endDate) return itemDate <= endDate;
       return true;
     });
+  };
+
+  const filterDataByPeriod = (data) => {
+    if (!data?.length) return data;
+    if (startDate || endDate) return data;
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+    const cutoff = subDays(new Date(), days);
+    return data.filter((item) => new Date(item.timestamp) >= cutoff);
   };
 
   // Calculate stats from actual data
@@ -155,8 +163,12 @@ function Analytics() {
   };
 
   useEffect(() => {
+    setCurrentPage(0);
+  }, [period, startDate, endDate]);
+
+  useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
-      const filtered = filterDataByDate(sensorData);
+      const filtered = filterDataByPeriod(filterDataByDate(sensorData));
       setFilteredData(filtered);
 
       // Calculate stats from filtered data

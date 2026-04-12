@@ -18,9 +18,12 @@ import {
   BookOpen,
   Headphones,
   Sparkles,
+  LayoutDashboard,
+  Thermometer,
 } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
+import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSubmitContactMessageMutation } from "../services/api";
@@ -139,7 +142,10 @@ const Support = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-teal-50">
+      <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-950 dark:to-gray-900">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggleButton />
+        </div>
         <div className="grow pt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div
@@ -148,14 +154,14 @@ const Support = () => {
             >
               <Logo />
             </div>
-            <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-xl text-center animate-in zoom-in-95 duration-300">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={40} className="text-green-600" />
+            <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl text-center animate-in zoom-in-95 duration-300 border border-gray-100 dark:border-gray-700">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={40} className="text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Message Sent!
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Thank you for reaching out. Our support team will get back to
                 you within 24 hours.
               </p>
@@ -174,7 +180,10 @@ const Support = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-green-50">
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-950 dark:to-gray-900">
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggleButton />
+      </div>
       <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo */}
@@ -187,14 +196,14 @@ const Support = () => {
 
           {/* Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-eco-100 text-eco-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 bg-eco-100 dark:bg-eco-900/40 text-eco-700 dark:text-eco-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <Headphones size={16} />
               <span>24/7 Support Available</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
               How Can We Help?
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
               Get support for the EBA Monitoring System. Find answers to common
               questions or contact our team directly.
             </p>
@@ -203,21 +212,21 @@ const Support = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left Column: Contact Info */}
             <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-eco-100 rounded-xl">
-                    <Mail size={20} className="text-eco-600" />
+                  <div className="p-2 bg-eco-100 dark:bg-eco-900/40 rounded-xl">
+                    <Mail size={20} className="text-eco-600 dark:text-eco-400" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Contact Information
                   </h2>
                 </div>
                 <div className="space-y-4">
                   <a
                     href="mailto:eba-system@ur.ac.rw"
-                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-3 rounded-xl hover:bg-gray-50 group"
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/80 group"
                   >
-                    <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-eco-100 transition-colors">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-eco-100 dark:group-hover:bg-eco-900/30 transition-colors">
                       <Mail
                         size={18}
                         className="text-gray-500 group-hover:text-eco-600"
@@ -505,8 +514,5 @@ const Support = () => {
     </div>
   );
 };
-
-// Import missing icons
-import { LayoutDashboard, Thermometer } from "lucide-react";
 
 export default Support;
