@@ -1,7 +1,7 @@
 // src/pages/dashboard/Settings.jsx
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { User, Bell, Moon, Sun, Mail, Save, Key } from "lucide-react";
+import { User, Bell, Moon, Sun, Mail, Save, Key, Monitor } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 
 import {
@@ -22,8 +22,8 @@ function Settings() {
   const user = useSelector((state) => state.auth.user);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
+  const { colorMode, setColorMode, resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const { data: notifPrefs, isLoading: prefsLoading } =
     useGetNotificationPreferencesQuery(undefined, { skip: !user });
@@ -264,29 +264,60 @@ function Settings() {
         <div className="space-y-6">
           {/* Appearance */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-2">
               {isDark ? (
                 <Moon className="text-eco-600 shrink-0" />
               ) : (
                 <Sun className="text-eco-600 shrink-0" />
               )}
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Appearance
-              </h2>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Appearance
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Default follows your device; you can pin light or dark.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-gray-700 dark:text-gray-300">
-                Dark mode
-              </span>
+            <div className="grid grid-cols-3 gap-2 mt-4">
               <button
                 type="button"
-                onClick={toggleTheme}
-                aria-pressed={isDark}
-                className={`relative w-12 h-6 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${isDark ? "bg-eco-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                onClick={() => setColorMode("system")}
+                aria-pressed={colorMode === "system"}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
+                  colorMode === "system"
+                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
+                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
+                }`}
               >
-                <span
-                  className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${isDark ? "right-1" : "left-1"}`}
-                />
+                <Monitor className="h-5 w-5 shrink-0" />
+                System
+              </button>
+              <button
+                type="button"
+                onClick={() => setColorMode("light")}
+                aria-pressed={colorMode === "light"}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
+                  colorMode === "light"
+                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
+                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
+                }`}
+              >
+                <Sun className="h-5 w-5 shrink-0" />
+                Light
+              </button>
+              <button
+                type="button"
+                onClick={() => setColorMode("dark")}
+                aria-pressed={colorMode === "dark"}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
+                  colorMode === "dark"
+                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
+                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
+                }`}
+              >
+                <Moon className="h-5 w-5 shrink-0" />
+                Dark
               </button>
             </div>
           </div>

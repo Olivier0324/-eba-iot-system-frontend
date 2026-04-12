@@ -116,7 +116,7 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
-  const { theme, toggleTheme } = useTheme();
+  const { colorMode, resolvedTheme, toggleTheme } = useTheme();
   const { canControl, canAccessReportsAlertsNotifications } = usePermissions();
 
   const { data: notifPayload, refetch: refetchNotifications } =
@@ -319,10 +319,16 @@ function Dashboard() {
           <button
             type="button"
             onClick={toggleTheme}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={
+              colorMode === "system"
+                ? `System (${resolvedTheme}). Next: always light`
+                : colorMode === "light"
+                  ? "Always light. Next: always dark"
+                  : "Always dark. Next: follow device"
+            }
             className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           {canAccessReportsAlertsNotifications && (
             <button
@@ -666,10 +672,16 @@ function Dashboard() {
             <button
               type="button"
               onClick={toggleTheme}
-              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              title={
+                colorMode === "system"
+                  ? `System (${resolvedTheme}). Next: always light`
+                  : colorMode === "light"
+                    ? "Always light. Next: always dark"
+                    : "Always dark. Next: follow device"
+              }
               className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {/* Notifications (managers + admins only) */}
             {canAccessReportsAlertsNotifications && (

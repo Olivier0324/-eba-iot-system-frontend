@@ -24,7 +24,7 @@ import {
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const { theme, toggleTheme } = useTheme();
+  const { colorMode, resolvedTheme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,10 +115,16 @@ const Navbar = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              title={
+                colorMode === "system"
+                  ? `System (${resolvedTheme}). Next: always light`
+                  : colorMode === "light"
+                    ? "Always light. Next: always dark"
+                    : "Always dark. Next: follow device"
+              }
               className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <Link
               to="/dashboard"
@@ -204,8 +210,14 @@ const Navbar = () => {
                 }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+                {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                <span>
+                  {colorMode === "system"
+                    ? `System (${resolvedTheme})`
+                    : colorMode === "light"
+                      ? "Light"
+                      : "Dark"}
+                </span>
               </button>
               {resourceLinks.map((link) => {
                 const itemClass =
