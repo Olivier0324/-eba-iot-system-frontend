@@ -15,7 +15,7 @@ export const api = createApi({
             return headers;
         },
     }),
-    tagTypes: ['Sensor', 'Report', 'Alert', 'Notification', 'Device', 'Blog', 'Research', 'Contact'],
+    tagTypes: ['Sensor', 'Report', 'Alert', 'Notification', 'Device', 'Blog', 'Research', 'Contact', 'User'],
     endpoints: (builder) => ({
         // ==================== AUTH ENDPOINTS ====================
         login: builder.mutation({
@@ -63,6 +63,9 @@ export const api = createApi({
                 method: 'PUT',
                 body: data,
             }),
+            // Unwrap to inner payload so callers get user/doc consistently (same as verify/me patterns).
+            transformResponse: (response) => response?.data ?? response,
+            invalidatesTags: ['User'],
         }),
 
         // ==================== SENSOR ENDPOINTS ====================

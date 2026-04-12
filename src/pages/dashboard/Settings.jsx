@@ -1,6 +1,6 @@
 // src/pages/dashboard/Settings.jsx
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { User, Bell, Moon, Sun, Mail, Save, Key, Monitor } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -11,6 +11,17 @@ import {
   useUpdateNotificationPreferencesMutation,
 } from "../../services/api";
 import { toast } from "react-toastify";
+import { setUser } from "../../services/reducers/authReducer";
+
+/** Pick user object from PUT /auth/profile response (shapes vary by API). */
+function userPatchFromProfileResponse(body) {
+  if (!body || typeof body !== "object") return null;
+  if (body.user && typeof body.user === "object") return body.user;
+  if (body._id || body.id || body.username !== undefined || body.email !== undefined) {
+    return body;
+  }
+  return null;
+}
 
 const inputClass =
   "w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-eco-500/35 dark:focus:ring-eco-400/25";
@@ -19,6 +30,7 @@ const inputReadOnlyClass =
   "w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200/80 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 cursor-not-allowed";
 
 function Settings() {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -56,9 +68,17 @@ function Settings() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    const username = profileData.username.trim();
     try {
       // Email is account identity — only username is editable here.
-      await updateProfile({ username: profileData.username.trim() }).unwrap();
+      const result = await updateProfile({ username }).unwrap();
+      const patch = userPatchFromProfileResponse(result);
+      const nextUser = user
+        ? { ...user, ...(patch || {}), username: patch?.username ?? username }
+        : patch;
+      if (nextUser) {
+        dispatch(setUser({ user: nextUser }));
+      }
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error(error?.data?.message || "Failed to update profile");
