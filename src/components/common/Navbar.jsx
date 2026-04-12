@@ -10,12 +10,10 @@ import {
   HelpCircle,
   Github,
   Eye,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
-import { useTheme } from "../../context/ThemeContext";
+import ThemeModeSelector from "./ThemeModeSelector";
 import {
   API_DOCUMENTATION_URL,
   FRONTEND_REPOSITORY_URL,
@@ -24,7 +22,6 @@ import {
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const { colorMode, resolvedTheme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,20 +109,9 @@ const Navbar = () => {
 
           {/* Desktop Right Links */}
           <div className="hidden md:flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              title={
-                colorMode === "system"
-                  ? `System (${resolvedTheme}). Next: always light`
-                  : colorMode === "light"
-                    ? "Always light. Next: always dark"
-                    : "Always dark. Next: follow device"
-              }
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div className="w-[13.25rem] shrink-0">
+              <ThemeModeSelector variant="compact" />
+            </div>
             <Link
               to="/dashboard"
               className="px-4 py-2 bg-eco-600 text-white rounded-lg text-sm font-medium hover:bg-eco-700 transition-all shadow-sm"
@@ -202,23 +188,12 @@ const Navbar = () => {
                 </button>
               ))}
               <div className="border-t border-gray-100 dark:border-gray-800 my-2" />
-              <button
-                type="button"
-                onClick={() => {
-                  toggleTheme();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                <span>
-                  {colorMode === "system"
-                    ? `System (${resolvedTheme})`
-                    : colorMode === "light"
-                      ? "Light"
-                      : "Dark"}
-                </span>
-              </button>
+              <p className="px-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                Theme
+              </p>
+              <div className="px-2 pb-1">
+                <ThemeModeSelector variant="compact" />
+              </div>
               {resourceLinks.map((link) => {
                 const itemClass =
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-eco-50 dark:hover:bg-gray-800 hover:text-eco-600 dark:hover:text-eco-400 transition-colors";

@@ -1,7 +1,7 @@
 // src/pages/dashboard/Settings.jsx
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { User, Bell, Moon, Sun, Mail, Save, Key, Monitor } from "lucide-react";
+import { User, Bell, Moon, Sun, Mail, Save, Key } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 
 import {
@@ -12,6 +12,7 @@ import {
 } from "../../services/api";
 import { toast } from "react-toastify";
 import { setUser } from "../../services/reducers/authReducer";
+import ThemeModeSelector from "../../components/common/ThemeModeSelector";
 
 /** Pick user object from PUT /auth/profile response (shapes vary by API). */
 function userPatchFromProfileResponse(body) {
@@ -34,7 +35,7 @@ function Settings() {
   const user = useSelector((state) => state.auth.user);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
-  const { colorMode, setColorMode, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   const { data: notifPrefs, isLoading: prefsLoading } =
@@ -299,47 +300,7 @@ function Settings() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => setColorMode("system")}
-                aria-pressed={colorMode === "system"}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
-                  colorMode === "system"
-                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
-                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
-                }`}
-              >
-                <Monitor className="h-5 w-5 shrink-0" />
-                System
-              </button>
-              <button
-                type="button"
-                onClick={() => setColorMode("light")}
-                aria-pressed={colorMode === "light"}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
-                  colorMode === "light"
-                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
-                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
-                }`}
-              >
-                <Sun className="h-5 w-5 shrink-0" />
-                Light
-              </button>
-              <button
-                type="button"
-                onClick={() => setColorMode("dark")}
-                aria-pressed={colorMode === "dark"}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 ${
-                  colorMode === "dark"
-                    ? "border-eco-500 bg-eco-50 dark:bg-eco-950/40 text-eco-800 dark:text-eco-200"
-                    : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/80"
-                }`}
-              >
-                <Moon className="h-5 w-5 shrink-0" />
-                Dark
-              </button>
-            </div>
+            <ThemeModeSelector className="mt-4" />
           </div>
 
           {/* Notifications Preferences */}

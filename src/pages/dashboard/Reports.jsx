@@ -1,6 +1,6 @@
 // src/pages/dashboard/Reports.jsx
 import React, { useState } from "react";
-import { FileText, Download, Eye, Trash2, Loader2, Plus } from "lucide-react";
+import { FileText, Eye, Trash2, Loader2, Plus, FileDown } from "lucide-react";
 import {
   useGenerateReportMutation,
   useGetReportsQuery,
@@ -16,6 +16,33 @@ const REPORT_TYPE_OPTIONS = [
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
 ];
+
+/** Client-side metadata export while server file download URL is unavailable. */
+function downloadReportSummaryTxt(report) {
+  const base =
+    (report.originalFilename || "report")
+      .replace(/[/\\?%*:|"<>]/g, "-")
+      .replace(/\.[^.]+$/i, "") || "report";
+  const body = [
+    "Report summary (exported from EBA Observa dashboard)",
+    "",
+    `Filename: ${report.originalFilename ?? "—"}`,
+    `Type: ${report.reportType ?? "—"}`,
+    `Created: ${report.createdAt ? format(new Date(report.createdAt), "yyyy-MM-dd HH:mm:ss") : "—"}`,
+    `Size: ${report.fileSize != null ? `${(report.fileSize / 1024).toFixed(1)} KB` : "—"}`,
+    "",
+    "Note: This file contains listing metadata only, not the full generated report binary.",
+  ].join("\n");
+  const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${base}-summary.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 function Reports() {
   const [reportType, setReportType] = useState("weekly");
@@ -192,13 +219,15 @@ function Reports() {
                     >
                       <Eye size={18} />
                     </a>
-                    <a
-                      href={report.downloadUrl}
-                      download
+                    <button
+                      type="button"
+                      onClick={() => downloadReportSummaryTxt(report)}
                       className="p-1 text-gray-500 hover:text-eco-600 transition-colors"
+                      title="Download report details as a .txt file (metadata from this list; server file export disabled)"
+                      aria-label="Download report summary as text"
                     >
-                      <Download size={18} />
-                    </a>
+                      <FileDown size={18} />
+                    </button>
                     <button
                       onClick={() => handleDelete(report._id)}
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors"

@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
-import ThemeToggleButton from "../components/common/ThemeToggleButton";
+import ThemeModeSelector from "../components/common/ThemeModeSelector";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSubmitContactMessageMutation } from "../services/api";
@@ -143,8 +143,8 @@ const Support = () => {
   if (submitted) {
     return (
       <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-950 dark:to-gray-900">
-        <div className="absolute top-4 right-4 z-50">
-          <ThemeToggleButton />
+        <div className="absolute top-4 right-4 z-50 w-[min(calc(100vw-2rem),15rem)] rounded-xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-2 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700">
+          <ThemeModeSelector />
         </div>
         <div className="grow pt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -181,8 +181,8 @@ const Support = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-950 dark:to-gray-900">
-      <div className="absolute top-4 right-4 z-50">
-        <ThemeToggleButton />
+      <div className="absolute top-4 right-4 z-50 w-[min(calc(100vw-2rem),15rem)] rounded-xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-2 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700">
+        <ThemeModeSelector />
       </div>
       <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

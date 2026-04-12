@@ -12,7 +12,7 @@ import {
 } from "../services/api";
 import { toast } from "react-toastify";
 import { connectSocket, disconnectSocket } from "../services/socket";
-import { useTheme } from "../context/ThemeContext";
+import ThemeModeSelector from "./common/ThemeModeSelector";
 import { usePermissions } from "../hooks/usePermissions";
 import {
   LayoutDashboard,
@@ -36,8 +36,6 @@ import {
   MoreHorizontal,
   ChevronsLeft,
   ChevronsRight,
-  Moon,
-  Sun,
   Inbox,
 } from "lucide-react";
 import { modalBackdropClass } from "./common/modalStyles";
@@ -116,7 +114,6 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
-  const { colorMode, resolvedTheme, toggleTheme } = useTheme();
   const { canControl, canAccessReportsAlertsNotifications } = usePermissions();
 
   const { data: notifPayload, refetch: refetchNotifications } =
@@ -315,21 +312,10 @@ function Dashboard() {
             EBA OBSERVA
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            title={
-              colorMode === "system"
-                ? `System (${resolvedTheme}). Next: always light`
-                : colorMode === "light"
-                  ? "Always light. Next: always dark"
-                  : "Always dark. Next: follow device"
-            }
-            className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="w-[11.75rem] min-w-0 sm:w-[12.25rem]">
+            <ThemeModeSelector variant="compact" />
+          </div>
           {canAccessReportsAlertsNotifications && (
             <button
               type="button"
@@ -669,20 +655,9 @@ function Dashboard() {
             </h1>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              title={
-                colorMode === "system"
-                  ? `System (${resolvedTheme}). Next: always light`
-                  : colorMode === "light"
-                    ? "Always light. Next: always dark"
-                    : "Always dark. Next: follow device"
-              }
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div className="w-[13.25rem] shrink-0">
+              <ThemeModeSelector variant="compact" />
+            </div>
             {/* Notifications (managers + admins only) */}
             {canAccessReportsAlertsNotifications && (
             <div className="relative">

@@ -21,8 +21,10 @@ const BlogPost = () => {
   if (!isLoading && (error || !post)) {
     return (
       <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-        <div className="absolute top-4 right-4 z-50">
-          <ThemeToggleButton />
+        <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
+          <div className="w-full max-w-[15rem] rounded-xl bg-white/90 dark:bg-gray-900/90 p-2 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 sm:max-w-[13.5rem]">
+            <ThemeToggleButton />
+          </div>
         </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="text-center">
@@ -49,8 +51,10 @@ const BlogPost = () => {
   if (isLoading) {
     return (
       <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-        <div className="absolute top-4 right-4 z-50">
-          <ThemeToggleButton />
+        <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
+          <div className="w-full max-w-[15rem] rounded-xl bg-white/90 dark:bg-gray-900/90 p-2 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 sm:max-w-[13.5rem]">
+            <ThemeToggleButton />
+          </div>
         </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
@@ -122,8 +126,10 @@ const BlogPost = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-      <div className="absolute top-4 right-4 z-50">
-        <ThemeToggleButton />
+      <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
+        <div className="w-full max-w-[15rem] rounded-xl bg-white/90 dark:bg-gray-900/90 p-2 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 sm:max-w-[13.5rem]">
+          <ThemeToggleButton />
+        </div>
       </div>
       <div className="grow pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
