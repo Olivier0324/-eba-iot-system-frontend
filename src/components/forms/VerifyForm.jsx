@@ -127,7 +127,7 @@ function VerifyForm() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 right-4 left-4 z-10 flex justify-end sm:left-auto">
-        <div className="w-full max-w-[15rem] rounded-xl bg-white/90 dark:bg-gray-900/90 p-2 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 sm:max-w-[13.5rem]">
+        <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
           <ThemeToggleButton />
         </div>
       </div>

@@ -14,7 +14,8 @@ const OPTIONS = [
 ];
 
 /**
- * Minimal theme menu (Vercel / editor-style): soft pill trigger, neutral panel, checkmarks.
+ * Compact theme menu: intrinsic-width pill (no stretched `w-full`), brand
+ * surfaces from `index.css` @theme (`eco-*`, grays), tight padding on compact.
  */
 function ThemeModeSelector({
   className = "",
@@ -47,27 +48,38 @@ function ThemeModeSelector({
     };
   }, [open]);
 
-  const triggerH = isCompact ? "h-8" : "h-9";
-  const triggerText = isCompact ? "text-[13px]" : "text-sm";
-  const triggerIcon = isCompact ? 15 : 16;
-  const rowIcon = isCompact ? 15 : 16;
-  const chevron = isCompact ? 14 : 15;
+  const triggerH = isCompact ? "h-7" : "h-8";
+  const triggerPad = isCompact ? "pl-1.5 pr-1.5 gap-1" : "pl-2 pr-2 gap-1.5";
+  const triggerText = "text-xs";
+  const triggerIcon = isCompact ? 13 : 14;
+  const rowIcon = isCompact ? 13 : 14;
+  const chevron = isCompact ? 12 : 13;
+  const checkSz = isCompact ? 13 : 14;
+  const menuMinW = isCompact ? "min-w-36" : "min-w-40";
+  const rowPad = isCompact ? "px-1.5 py-1" : "px-2 py-1.5";
+  const rowGap = isCompact ? "gap-2" : "gap-2.5";
+  const labelClass = isCompact
+    ? "text-xs font-medium leading-tight text-gray-800 dark:text-gray-100"
+    : "text-sm font-medium leading-tight text-gray-800 dark:text-gray-100";
 
-  const iconMuted = "shrink-0 text-zinc-500 dark:text-zinc-400";
+  const iconMuted = "shrink-0 text-eco-600 dark:text-eco-400";
 
   return (
-    <div className={`relative ${className}`.trim()} ref={rootRef}>
+    <div
+      className={`relative inline-block w-fit max-w-full ${className}`.trim()}
+      ref={rootRef}
+    >
       <button
         type="button"
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full min-w-0 items-center gap-2 ${triggerH} rounded-full pl-2.5 pr-2 font-medium text-zinc-700 transition-[background,box-shadow,color] dark:text-zinc-200 ${triggerText} ${
+        className={`inline-flex w-fit max-w-full min-w-0 items-center ${triggerPad} ${triggerH} rounded-full font-medium text-gray-800 transition-[background,box-shadow,color] dark:text-gray-100 ${triggerText} ${
           open
-            ? "bg-zinc-200/90 shadow-inner ring-1 ring-zinc-300/80 dark:bg-zinc-700/90 dark:ring-zinc-600/60"
-            : "bg-zinc-100/90 hover:bg-zinc-200/80 dark:bg-zinc-800/90 dark:hover:bg-zinc-700/80"
-        } focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-900`}
+            ? "bg-eco-50/95 shadow-inner ring-1 ring-inset ring-eco-300/80 dark:bg-gray-700 dark:ring-eco-400/45"
+            : "bg-white/90 ring-1 ring-inset ring-eco-200/80 hover:bg-white dark:bg-gray-800 dark:ring-eco-500/35 dark:hover:bg-gray-700"
+        } focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-eco-400/40 dark:focus-visible:ring-offset-gray-900`}
       >
         <ActiveIcon
           size={triggerIcon}
@@ -78,7 +90,7 @@ function ThemeModeSelector({
         <span className="min-w-0 flex-1 truncate text-left leading-none">
           {active.label}
           {colorMode === "system" && (
-            <span className="font-normal text-zinc-400 dark:text-zinc-500">
+            <span className="font-normal text-gray-500 dark:text-gray-400">
               {" · "}
               {resolvedTheme === "dark" ? "dark" : "light"}
             </span>
@@ -86,8 +98,8 @@ function ThemeModeSelector({
         </span>
         <ChevronDown
           size={chevron}
-          strokeWidth={1.75}
-          className={`shrink-0 text-zinc-400 opacity-70 transition-transform duration-200 dark:text-zinc-500 ${open ? "-rotate-180" : ""}`}
+          strokeWidth={2}
+          className={`shrink-0 text-gray-500 opacity-80 transition-transform duration-200 dark:text-gray-400 ${open ? "-rotate-180" : ""}`}
           aria-hidden
         />
       </button>
@@ -95,7 +107,7 @@ function ThemeModeSelector({
       {open && (
         <ul
           role="listbox"
-          className="absolute right-0 z-[100] mt-1.5 min-w-[11.5rem] overflow-hidden rounded-xl border border-zinc-200/80 bg-white/95 p-1 shadow-lg shadow-zinc-900/10 ring-1 ring-black/[0.04] backdrop-blur-md dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:ring-white/[0.06]"
+          className={`absolute right-0 z-[100] mt-1 ${menuMinW} overflow-hidden rounded-xl border border-gray-200/90 bg-white/95 p-1 shadow-lg shadow-gray-900/10 ring-1 ring-eco-500/10 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 dark:ring-eco-400/15`}
         >
           {OPTIONS.map(({ id, label, hint, Icon }) => {
             const selected = colorMode === id;
@@ -107,10 +119,10 @@ function ThemeModeSelector({
                     setColorMode(id);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors ${
+                  className={`flex w-full items-start ${rowGap} rounded-lg ${rowPad} text-left transition-colors ${
                     selected
-                      ? "bg-zinc-100 dark:bg-zinc-800"
-                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                      ? "bg-eco-50 dark:bg-eco-950/45"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-800/80"
                   }`}
                 >
                   <Icon
@@ -120,24 +132,27 @@ function ThemeModeSelector({
                     aria-hidden
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-tight text-zinc-800 dark:text-zinc-100">
-                      {label}
-                    </span>
+                    <span className={`block ${labelClass}`}>{label}</span>
                     {hint && (
-                      <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+                      <span
+                        className={`mt-0.5 block leading-snug text-gray-500 dark:text-gray-400 ${isCompact ? "text-[10px]" : "text-[11px]"}`}
+                      >
                         {hint}
                       </span>
                     )}
                   </span>
                   {selected ? (
                     <Check
-                      size={15}
+                      size={checkSz}
                       strokeWidth={2}
-                      className="mt-0.5 shrink-0 text-zinc-600 dark:text-zinc-300"
+                      className="mt-0.5 shrink-0 text-eco-600 dark:text-eco-400"
                       aria-hidden
                     />
                   ) : (
-                    <span className="mt-0.5 w-[15px] shrink-0" aria-hidden />
+                    <span
+                      className={`mt-0.5 shrink-0 ${isCompact ? "w-3.5" : "w-4"}`}
+                      aria-hidden
+                    />
                   )}
                 </button>
               </li>

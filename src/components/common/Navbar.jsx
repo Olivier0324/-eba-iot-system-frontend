@@ -109,9 +109,7 @@ const Navbar = () => {
 
           {/* Desktop Right Links */}
           <div className="hidden md:flex items-center gap-2">
-            <div className="w-[13.25rem] shrink-0">
-              <ThemeModeSelector variant="compact" />
-            </div>
+            <ThemeModeSelector variant="compact" className="shrink-0" />
             <Link
               to="/dashboard"
               className="px-4 py-2 bg-eco-600 text-white rounded-lg text-sm font-medium hover:bg-eco-700 transition-all shadow-sm"

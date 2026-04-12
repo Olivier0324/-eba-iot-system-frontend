@@ -139,7 +139,7 @@ function Notifications() {
               notificationsFailed ||
               (data?.unreadCount ?? 0) === 0
             }
-            className="inline-flex items-center justify-center gap-2 min-h-[2.5rem] px-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 min-h-10 px-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {markingAll ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -150,7 +150,7 @@ function Notifications() {
           </button>
           <Link
             to="/dashboard"
-            className="inline-flex items-center justify-center min-h-[2.5rem] px-4 rounded-xl text-sm font-medium text-eco-700 dark:text-eco-400 hover:bg-eco-50 dark:hover:bg-eco-950/30"
+            className="inline-flex items-center justify-center min-h-10 px-4 rounded-xl text-sm font-medium text-eco-700 dark:text-eco-400 hover:bg-eco-50 dark:hover:bg-eco-950/30"
           >
             Dashboard
           </Link>
@@ -182,7 +182,7 @@ function Notifications() {
               type="button"
               onClick={() => void refetch()}
               disabled={busy}
-              className="inline-flex items-center gap-2 min-h-[2.5rem] px-5 rounded-xl bg-eco-600 text-white text-sm font-medium hover:bg-eco-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 min-h-10 px-5 rounded-xl bg-eco-600 text-white text-sm font-medium hover:bg-eco-700 disabled:opacity-50"
             >
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

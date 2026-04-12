@@ -12,7 +12,6 @@ import {
 } from "../services/api";
 import { toast } from "react-toastify";
 import { connectSocket, disconnectSocket } from "../services/socket";
-import ThemeModeSelector from "./common/ThemeModeSelector";
 import { usePermissions } from "../hooks/usePermissions";
 import {
   LayoutDashboard,
@@ -313,9 +312,6 @@ function Dashboard() {
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <div className="w-[11.75rem] min-w-0 sm:w-[12.25rem]">
-            <ThemeModeSelector variant="compact" />
-          </div>
           {canAccessReportsAlertsNotifications && (
             <button
               type="button"
@@ -538,7 +534,7 @@ function Dashboard() {
                     <ul
                       className={
                         sidebarCollapsed
-                          ? "absolute left-full top-0 z-[60] ml-1 mt-0 min-w-[12.5rem] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg space-y-0.5"
+                          ? "absolute left-full top-0 z-[60] ml-1 mt-0 min-w-50 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg space-y-0.5"
                           : "ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800"
                       }
                     >
@@ -655,9 +651,6 @@ function Dashboard() {
             </h1>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-[13.25rem] shrink-0">
-              <ThemeModeSelector variant="compact" />
-            </div>
             {/* Notifications (managers + admins only) */}
             {canAccessReportsAlertsNotifications && (
             <div className="relative">

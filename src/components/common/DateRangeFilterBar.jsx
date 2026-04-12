@@ -5,7 +5,7 @@ import { Calendar } from "lucide-react";
 
 /** Inputs: no heavy outer border — inset bar + soft rings (matches FilterPills tone). */
 const inputClass =
-  "w-full min-h-[2.5rem] rounded-xl border-0 bg-white dark:bg-gray-800 px-3.5 py-2 text-sm text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-200/80 dark:ring-gray-600/70 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-eco-500/35 dark:focus:ring-eco-400/30 sm:min-w-[11rem]";
+  "w-full min-h-10 rounded-xl border-0 bg-white dark:bg-gray-800 px-3.5 py-2 text-sm text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-200/80 dark:ring-gray-600/70 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-eco-500/35 dark:focus:ring-eco-400/30 sm:min-w-44";
 
 /**
  * Shared date range strip for Analytics / Overview (and similar pages).
@@ -60,7 +60,7 @@ function DateRangeFilterBar({
           <button
             type="button"
             onClick={onClear}
-            className="shrink-0 min-h-[2.5rem] px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-white/95 dark:bg-gray-900/55 hover:bg-white dark:hover:bg-gray-900/90 ring-1 ring-inset ring-gray-200/80 dark:ring-gray-600/70 transition-colors w-full sm:w-auto"
+            className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-white/95 dark:bg-gray-900/55 hover:bg-white dark:hover:bg-gray-900/90 ring-1 ring-inset ring-gray-200/80 dark:ring-gray-600/70 transition-colors w-full sm:w-auto"
           >
             Clear
           </button>

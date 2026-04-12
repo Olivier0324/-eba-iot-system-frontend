@@ -369,7 +369,7 @@ const UserManagement = () => {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-end">
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <label className="block text-xs font-medium text-gray-500 mb-1">
             Search
           </label>
@@ -394,7 +394,7 @@ const UserManagement = () => {
               setRoleFilter(e.target.value);
               setCurrentPage(0);
             }}
-            className={`min-w-[10.5rem] ${dashboardSelectClass}`}
+            className={`min-w-42 ${dashboardSelectClass}`}
           >
             <option value="">All Roles</option>
             <option value="admin">Admin</option>
@@ -412,7 +412,7 @@ const UserManagement = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(0);
             }}
-            className={`min-w-[10.5rem] ${dashboardSelectClass}`}
+            className={`min-w-42 ${dashboardSelectClass}`}
           >
             <option value="">All Status</option>
             <option value="true">Active</option>
@@ -528,7 +528,7 @@ const UserManagement = () => {
                       {user.email}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex max-w-[12rem] items-center gap-2">
+                      <div className="flex max-w-48 items-center gap-2">
                         <span
                           className={`h-2 w-2 shrink-0 rounded-full ${getRoleDotClass(
                             user.role,

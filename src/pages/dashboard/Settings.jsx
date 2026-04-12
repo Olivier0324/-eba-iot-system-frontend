@@ -25,10 +25,10 @@ function userPatchFromProfileResponse(body) {
 }
 
 const inputClass =
-  "w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-eco-500/35 dark:focus:ring-eco-400/25";
+  "w-full min-h-10 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-eco-500/35 dark:focus:ring-eco-400/25";
 
 const inputReadOnlyClass =
-  "w-full min-h-[2.5rem] px-4 py-2 rounded-xl border border-gray-200/80 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 cursor-not-allowed";
+  "w-full min-h-10 px-4 py-2 rounded-xl border border-gray-200/80 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 cursor-not-allowed";
 
 function Settings() {
   const dispatch = useDispatch();
@@ -195,7 +195,7 @@ function Settings() {
               <button
                 type="submit"
                 disabled={isUpdatingProfile}
-                className="inline-flex items-center justify-center gap-2 min-h-[2.5rem] px-6 py-2 rounded-xl bg-eco-600 text-white font-medium hover:bg-eco-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
+                className="inline-flex items-center justify-center gap-2 min-h-10 px-6 py-2 rounded-xl bg-eco-600 text-white font-medium hover:bg-eco-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
               >
                 <Save size={18} />
                 {isUpdatingProfile ? "Saving…" : "Save profile"}
@@ -274,7 +274,7 @@ function Settings() {
               <button
                 type="submit"
                 disabled={isChangingPassword}
-                className="inline-flex items-center justify-center min-h-[2.5rem] px-6 py-2 rounded-xl bg-eco-600 text-white font-medium hover:bg-eco-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
+                className="inline-flex items-center justify-center min-h-10 px-6 py-2 rounded-xl bg-eco-600 text-white font-medium hover:bg-eco-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
               >
                 {isChangingPassword ? "Updating…" : "Change password"}
               </button>

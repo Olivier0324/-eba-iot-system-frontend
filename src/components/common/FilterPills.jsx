@@ -26,7 +26,7 @@ function FilterPills({ options, value, onChange, className = "", ariaLabel }) {
             role="tab"
             aria-selected={selected}
             onClick={() => onChange(opt.value)}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 min-h-[2.5rem] ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 min-h-10 ${
               selected
                 ? "bg-white dark:bg-gray-700 text-eco-800 dark:text-eco-200 shadow-sm ring-1 ring-gray-200/90 dark:ring-gray-600/90"
                 : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-700/40"

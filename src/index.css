@@ -57,4 +57,9 @@
 
   /* --- FONT FAMILY --- */
   --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /*
+   * Theme picker (ThemeModeSelector): trigger + menu use Tailwind `eco-*`
+   * and `gray-*` utilities so the control matches Navbar / Settings accents.
+   */
 }
