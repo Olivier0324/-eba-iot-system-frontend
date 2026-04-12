@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { Monitor, Sun, Moon, ChevronDown, Check } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -6,7 +13,7 @@ const OPTIONS = [
   {
     id: "system",
     label: "System",
-    hint: "Match device",
+    hint: null,
     Icon: Monitor,
   },
   { id: "light", label: "Light", hint: null, Icon: Sun },
@@ -16,26 +23,69 @@ const OPTIONS = [
 /**
  * Compact theme menu: intrinsic-width pill (no stretched `w-full`), brand
  * surfaces from `index.css` @theme (`eco-*`, grays), tight padding on compact.
+ *
+ * Dropdown is portaled with `position: fixed` and clamped to the viewport so
+ * it is not clipped by dashboard `overflow-y-auto` or pushed off-screen when
+ * the trigger sits on the left (e.g. Settings).
+ *
+ * @param {'start' | 'end'} [menuAlign] — Horizontal placement of the menu
+ *   relative to the trigger. Omit to use compact → end, default → start.
  */
 function ThemeModeSelector({
   className = "",
   variant = "default",
+  menuAlign: menuAlignProp,
   "aria-label": ariaLabel = "Theme",
 }) {
   const { colorMode, setColorMode, resolvedTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const [menuBox, setMenuBox] = useState(null);
   const rootRef = useRef(null);
+  const menuRef = useRef(null);
   const isCompact = variant === "compact";
+  const menuAlign = menuAlignProp ?? (isCompact ? "end" : "start");
 
   const active = OPTIONS.find((o) => o.id === colorMode) ?? OPTIONS[0];
   const ActiveIcon = active.Icon;
 
+  const updateMenuBox = useCallback(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const margin = 8;
+    const minW = isCompact ? 144 : 160;
+    const cap = Math.max(0, window.innerWidth - margin * 2);
+    const width = Math.min(280, Math.max(minW, cap));
+    const r = root.getBoundingClientRect();
+    let left = menuAlign === "end" ? r.right - width : r.left;
+    left = Math.min(
+      Math.max(left, margin),
+      window.innerWidth - width - margin,
+    );
+    const top = Math.min(r.bottom + 6, window.innerHeight - margin);
+    setMenuBox({ top, left, width });
+  }, [isCompact, menuAlign, colorMode]);
+
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setMenuBox(null);
+      return undefined;
+    }
+    updateMenuBox();
+    window.addEventListener("resize", updateMenuBox);
+    window.addEventListener("scroll", updateMenuBox, true);
+    return () => {
+      window.removeEventListener("resize", updateMenuBox);
+      window.removeEventListener("scroll", updateMenuBox, true);
+    };
+  }, [open, updateMenuBox]);
+
   useEffect(() => {
     if (!open) return undefined;
     const onDoc = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+      const t = e.target;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
     const onKey = (e) => {
       if (e.key === "Escape") setOpen(false);
@@ -55,7 +105,6 @@ function ThemeModeSelector({
   const rowIcon = isCompact ? 13 : 14;
   const chevron = isCompact ? 12 : 13;
   const checkSz = isCompact ? 13 : 14;
-  const menuMinW = isCompact ? "min-w-36" : "min-w-40";
   const rowPad = isCompact ? "px-1.5 py-1" : "px-2 py-1.5";
   const rowGap = isCompact ? "gap-2" : "gap-2.5";
   const labelClass = isCompact
@@ -104,62 +153,74 @@ function ThemeModeSelector({
         />
       </button>
 
-      {open && (
-        <ul
-          role="listbox"
-          className={`absolute right-0 z-[100] mt-1 ${menuMinW} overflow-hidden rounded-xl border border-gray-200/90 bg-white/95 p-1 shadow-lg shadow-gray-900/10 ring-1 ring-eco-500/10 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 dark:ring-eco-400/15`}
-        >
-          {OPTIONS.map(({ id, label, hint, Icon }) => {
-            const selected = colorMode === id;
-            return (
-              <li key={id} role="option" aria-selected={selected}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setColorMode(id);
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-start ${rowGap} rounded-lg ${rowPad} text-left transition-colors ${
-                    selected
-                      ? "bg-eco-50 dark:bg-eco-950/45"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800/80"
-                  }`}
-                >
-                  <Icon
-                    size={rowIcon}
-                    strokeWidth={1.5}
-                    className={`mt-0.5 ${iconMuted}`}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className={`block ${labelClass}`}>{label}</span>
-                    {hint && (
+      {open &&
+        menuBox &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <ul
+            ref={menuRef}
+            role="listbox"
+            style={{
+              position: "fixed",
+              top: menuBox.top,
+              left: menuBox.left,
+              width: menuBox.width,
+              zIndex: 200,
+            }}
+            className="box-border min-w-0 max-h-[min(70vh,calc(100vh-2rem))] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-200/90 bg-white/95 p-1 shadow-lg shadow-gray-900/10 ring-1 ring-eco-500/10 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 dark:ring-eco-400/15"
+          >
+            {OPTIONS.map(({ id, label, hint, Icon }) => {
+              const selected = colorMode === id;
+              return (
+                <li key={id} role="option" aria-selected={selected}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setColorMode(id);
+                      setOpen(false);
+                    }}
+                    className={`flex w-full items-start ${rowGap} rounded-lg ${rowPad} text-left transition-colors ${
+                      selected
+                        ? "bg-eco-50 dark:bg-eco-950/45"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                    }`}
+                  >
+                    <Icon
+                      size={rowIcon}
+                      strokeWidth={1.5}
+                      className={`mt-0.5 ${iconMuted}`}
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className={`block ${labelClass}`}>{label}</span>
+                      {hint && (
+                        <span
+                          className={`mt-0.5 block leading-snug text-gray-500 dark:text-gray-400 ${isCompact ? "text-[10px]" : "text-[11px]"}`}
+                        >
+                          {hint}
+                        </span>
+                      )}
+                    </span>
+                    {selected ? (
+                      <Check
+                        size={checkSz}
+                        strokeWidth={2}
+                        className="mt-0.5 shrink-0 text-eco-600 dark:text-eco-400"
+                        aria-hidden
+                      />
+                    ) : (
                       <span
-                        className={`mt-0.5 block leading-snug text-gray-500 dark:text-gray-400 ${isCompact ? "text-[10px]" : "text-[11px]"}`}
-                      >
-                        {hint}
-                      </span>
+                        className={`mt-0.5 shrink-0 ${isCompact ? "w-3.5" : "w-4"}`}
+                        aria-hidden
+                      />
                     )}
-                  </span>
-                  {selected ? (
-                    <Check
-                      size={checkSz}
-                      strokeWidth={2}
-                      className="mt-0.5 shrink-0 text-eco-600 dark:text-eco-400"
-                      aria-hidden
-                    />
-                  ) : (
-                    <span
-                      className={`mt-0.5 shrink-0 ${isCompact ? "w-3.5" : "w-4"}`}
-                      aria-hidden
-                    />
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }

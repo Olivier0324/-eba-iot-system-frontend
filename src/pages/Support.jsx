@@ -145,7 +145,7 @@ const Support = () => {
       <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-950 dark:to-gray-900">
         <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
           <div className="w-fit max-w-full rounded-xl bg-white/95 dark:bg-gray-900/95 p-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm dark:ring-gray-700">
-            <ThemeModeSelector />
+            <ThemeModeSelector menuAlign="end" />
           </div>
         </div>
         <div className="grow pt-20">
@@ -185,7 +185,7 @@ const Support = () => {
     <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-950 dark:to-gray-900">
       <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
         <div className="w-fit max-w-full rounded-xl bg-white/95 dark:bg-gray-900/95 p-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm dark:ring-gray-700">
-          <ThemeModeSelector />
+          <ThemeModeSelector menuAlign="end" />
         </div>
       </div>
       <div className="grow pt-20">
