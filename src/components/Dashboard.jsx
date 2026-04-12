@@ -40,6 +40,7 @@ import {
   Sun,
   Inbox,
 } from "lucide-react";
+import { modalBackdropClass } from "./common/modalStyles";
 
 const SIDEBAR_COLLAPSED_KEY = "eba-dashboard-sidebar-collapsed";
 
@@ -617,8 +618,9 @@ function Dashboard() {
       {/* Overlay for mobile sidebar */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          className={`fixed inset-0 z-40 md:hidden ${modalBackdropClass}`}
           onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden
         />
       )}
 

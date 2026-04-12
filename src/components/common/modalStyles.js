@@ -6,6 +6,10 @@
 export const modalPanelClass =
   "rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200";
 
+/** Dimming layer behind modals — Tailwind gray-800 (#1f2937), not pure black, so it matches dark modal panels. */
+export const modalBackdropClass =
+  "bg-gray-800/70 backdrop-blur-sm";
+
 export const dashboardSelectClass =
   "min-h-[2.5rem] w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-eco-500/80 focus:border-eco-500 dark:focus:ring-offset-0";
 

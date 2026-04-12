@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { modalPanelClass } from "./modalStyles";
+import { modalBackdropClass, modalPanelClass } from "./modalStyles";
 
 /**
  * Shared modal overlay + panel shell for dashboard dialogs.
@@ -28,7 +28,7 @@ function ModalShell({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200 ${modalBackdropClass}`}
       role="dialog"
       aria-modal="true"
       onClick={(e) => {
