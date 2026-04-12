@@ -117,12 +117,15 @@ function Dashboard() {
   const token = useSelector((state) => state.auth.token);
   const [userLogout, { isLoading }] = useLogoutMutation();
   const { theme, toggleTheme } = useTheme();
-  const { canControl } = usePermissions();
+  const { canControl, canAccessReportsAlertsNotifications } = usePermissions();
 
   const { data: notifPayload, refetch: refetchNotifications } =
     useGetNotificationsQuery(
       { page: 1, limit: DROPDOWN_UNREAD_LIMIT, isRead: false },
-      { skip: !token, pollingInterval: 60000 },
+      {
+        skip: !token || !canAccessReportsAlertsNotifications,
+        pollingInterval: 60_000,
+      },
     );
   const [markNotificationReadApi] = useMarkNotificationAsReadMutation();
   const [markAllNotificationsReadApi] = useMarkAllNotificationsAsReadMutation();
@@ -177,6 +180,7 @@ function Dashboard() {
         });
 
         socket.on("new-alerts", (alerts) => {
+          if (!canAccessReportsAlertsNotifications) return;
           alerts.forEach((alert) => {
             toast.error(alert.title);
           });
@@ -192,7 +196,12 @@ function Dashboard() {
         // Socket setup failed; notifications will resume on next successful connection.
       }
     }
-  }, [token, user?.id, refetchNotifications]);
+  }, [
+    token,
+    user?.id,
+    refetchNotifications,
+    canAccessReportsAlertsNotifications,
+  ]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);
@@ -242,32 +251,38 @@ function Dashboard() {
 
   const isAdmin = user?.role === "admin";
 
-  // Navigation items
-  const navItems = useMemo(
-    () => [
+  // Navigation items (role `user`: no reports, alerts, or notifications)
+  const navItems = useMemo(() => {
+    const core = [
       { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
       { name: "Sensor Data", path: "/dashboard/sensors", icon: Database },
-      { name: "Reports", path: "/dashboard/reports", icon: FileText },
-      { name: "Alerts", path: "/dashboard/alerts", icon: AlertTriangle },
-      { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
-      {
-        name: "Notifications",
-        path: "/dashboard/notifications",
-        icon: Inbox,
-      },
-      ...(canControl
-        ? [
-            {
-              name: "Control Panel",
-              path: "/dashboard/control",
-              icon: Activity,
-            },
-          ]
-        : []),
-      { name: "Settings", path: "/dashboard/settings", icon: Settings },
-    ],
-    [canControl],
-  );
+    ];
+    const staffInsights = canAccessReportsAlertsNotifications
+      ? [
+          { name: "Reports", path: "/dashboard/reports", icon: FileText },
+          { name: "Alerts", path: "/dashboard/alerts", icon: AlertTriangle },
+          { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
+          {
+            name: "Notifications",
+            path: "/dashboard/notifications",
+            icon: Inbox,
+          },
+        ]
+      : [
+          { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
+        ];
+    const control = canControl
+      ? [
+          {
+            name: "Control Panel",
+            path: "/dashboard/control",
+            icon: Activity,
+          },
+        ]
+      : [];
+    const tail = [{ name: "Settings", path: "/dashboard/settings", icon: Settings }];
+    return [...core, ...staffInsights, ...control, ...tail];
+  }, [canControl, canAccessReportsAlertsNotifications]);
 
   // In Dashboard.jsx, update the adminItems array:
   const adminItems = [
@@ -309,23 +324,25 @@ function Dashboard() {
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-alert-500 text-white text-xs flex items-center justify-center">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
+          {canAccessReportsAlertsNotifications && (
+            <button
+              type="button"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-alert-500 text-white text-xs flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mobile notification sheet */}
-      {showNotifications && (
+      {canAccessReportsAlertsNotifications && showNotifications && (
         <div className="md:hidden fixed inset-x-0 top-[3.25rem] z-[35] px-3 max-h-[min(70vh,calc(100vh-5rem))]">
           <div className="rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 overflow-hidden flex flex-col max-h-[min(70vh,calc(100vh-5.5rem))]">
             <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center gap-2 shrink-0">
@@ -654,7 +671,8 @@ function Dashboard() {
             >
               {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            {/* Notifications */}
+            {/* Notifications (managers + admins only) */}
+            {canAccessReportsAlertsNotifications && (
             <div className="relative">
               <button
                 type="button"
@@ -730,6 +748,7 @@ function Dashboard() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </header>
 

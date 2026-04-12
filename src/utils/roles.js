@@ -16,6 +16,12 @@ export function isViewOnlyUser(user) {
   return getUserRole(user) === ROLES.USER;
 }
 
+/** Reports, alerts, and in-app notifications — admins and project managers only. */
+export function canAccessReportsAlertsNotifications(user) {
+  const r = getUserRole(user);
+  return r === ROLES.ADMIN || r === ROLES.MANAGER;
+}
+
 /**
  * Device / sampling interval control — admins only.
  * Project managers (`manager`) can use the dashboard but must not access hardware control.

@@ -43,7 +43,7 @@ function recordIsRead(n) {
 
 function Notifications() {
   const [page, setPage] = useState(1);
-  const { isViewOnly } = usePermissions();
+  const { isViewOnly, canAccessReportsAlertsNotifications } = usePermissions();
   const {
     data,
     isLoading,
@@ -51,10 +51,10 @@ function Notifications() {
     refetch,
     isError: notificationsFailed,
     error: notificationsError,
-  } = useGetNotificationsQuery({
-    page,
-    limit: LIMIT,
-  });
+  } = useGetNotificationsQuery(
+    { page, limit: LIMIT },
+    { skip: !canAccessReportsAlertsNotifications },
+  );
   const notificationsErrMsg = notificationsFailed
     ? getFetchErrorMessage(
         notificationsError,

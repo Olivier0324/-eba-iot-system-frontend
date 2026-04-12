@@ -27,6 +27,7 @@ import Support from "./pages/Support";
 import ContactMessages from "./pages/dashboard/admin/ContactMessages";
 import BlogManagement from "./pages/dashboard/admin/BlogManagement";
 import UserManagement from "./pages/dashboard/admin/UserManagement";
+import RequireStaffInsights from "./components/RequireStaffInsights";
 import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
@@ -48,10 +49,31 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<Overview />} />
             <Route path="sensors" element={<Sensors />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="alerts" element={<Alerts />} />
+            <Route
+              path="reports"
+              element={
+                <RequireStaffInsights>
+                  <Reports />
+                </RequireStaffInsights>
+              }
+            />
+            <Route
+              path="alerts"
+              element={
+                <RequireStaffInsights>
+                  <Alerts />
+                </RequireStaffInsights>
+              }
+            />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="notifications" element={<Notifications />} />
+            <Route
+              path="notifications"
+              element={
+                <RequireStaffInsights>
+                  <Notifications />
+                </RequireStaffInsights>
+              }
+            />
             <Route path="control" element={<ControlPanel />} />
             <Route path="settings" element={<Settings />} />
             {/* Admin Only Routes */}

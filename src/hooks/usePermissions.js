@@ -6,6 +6,7 @@ import {
   canAccessDeviceControl,
   canManageUsers,
   canAccessContentAdmin,
+  canAccessReportsAlertsNotifications,
 } from "../utils/roles";
 
 export function usePermissions() {
@@ -18,6 +19,8 @@ export function usePermissions() {
       canControl: canAccessDeviceControl(user),
       canManageUsers: canManageUsers(user),
       canAccessContentAdmin: canAccessContentAdmin(user),
+      canAccessReportsAlertsNotifications:
+        canAccessReportsAlertsNotifications(user),
     }),
     [user],
   );
