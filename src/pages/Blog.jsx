@@ -60,9 +60,7 @@ const Blog = () => {
     return (
       <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
         <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
-          <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
-            <ThemeToggleButton />
-          </div>
+          <ThemeToggleButton className="shrink-0" />
         </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
@@ -76,9 +74,7 @@ const Blog = () => {
     return (
       <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
         <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
-          <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
-            <ThemeToggleButton />
-          </div>
+          <ThemeToggleButton className="shrink-0" />
         </div>
         <div className="grow pt-20 flex items-center justify-center">
           <div className="text-center">
@@ -100,11 +96,9 @@ const Blog = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-      <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
-        <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
-          <ThemeToggleButton />
+        <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
+          <ThemeToggleButton className="shrink-0" />
         </div>
-      </div>
       <div className="grow pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Logo - Centered and Clickable */}

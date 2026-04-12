@@ -41,9 +41,7 @@ function AccountInactive() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 right-4 left-4 z-10 flex justify-end sm:left-auto">
-        <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
-          <ThemeToggleButton />
-        </div>
+        <ThemeToggleButton className="shrink-0" />
       </div>
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-eco-100 dark:border-gray-700">
         {/* Header */}
