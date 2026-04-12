@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
-import ThemeModeSelector from "../components/common/ThemeModeSelector";
+import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSubmitContactMessageMutation } from "../services/api";
@@ -142,10 +142,10 @@ const Support = () => {
 
   if (submitted) {
     return (
-      <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-950 dark:to-gray-900">
+      <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
         <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
-          <div className="w-fit max-w-full rounded-xl bg-white/95 dark:bg-gray-900/95 p-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm dark:ring-gray-700">
-            <ThemeModeSelector menuAlign="end" />
+          <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
+            <ThemeToggleButton menuAlign="end" />
           </div>
         </div>
         <div className="grow pt-20">
@@ -156,9 +156,9 @@ const Support = () => {
             >
               <Logo />
             </div>
-            <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl text-center animate-in zoom-in-95 duration-300 border border-gray-100 dark:border-gray-700">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={40} className="text-green-600 dark:text-green-400" />
+            <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg text-center animate-in zoom-in-95 duration-300 border border-gray-100 dark:border-gray-700">
+              <div className="w-20 h-20 bg-eco-100 dark:bg-eco-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={40} className="text-eco-600 dark:text-eco-400" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Message Sent!
@@ -169,7 +169,7 @@ const Support = () => {
               </p>
               <button
                 onClick={() => navigate("/")}
-                className="px-6 py-2.5 bg-gradient-to-r from-eco-600 to-eco-700 text-white rounded-xl hover:from-eco-700 hover:to-eco-800 transition-all font-medium"
+                className="px-6 py-2.5 bg-eco-600 text-white rounded-xl hover:bg-eco-700 transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
               >
                 Return to Home
               </button>
@@ -182,10 +182,10 @@ const Support = () => {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-950 dark:to-gray-900">
+    <div className="relative min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
       <div className="absolute top-4 right-4 left-4 z-50 flex justify-end sm:left-auto">
-        <div className="w-fit max-w-full rounded-xl bg-white/95 dark:bg-gray-900/95 p-1.5 shadow-sm ring-1 ring-gray-200 backdrop-blur-sm dark:ring-gray-700">
-          <ThemeModeSelector menuAlign="end" />
+        <div className="w-fit max-w-full rounded-xl bg-white/90 dark:bg-gray-900/90 p-1.5 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700">
+          <ThemeToggleButton menuAlign="end" />
         </div>
       </div>
       <div className="grow pt-20">
@@ -200,7 +200,7 @@ const Support = () => {
 
           {/* Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-eco-100 dark:bg-eco-900/40 text-eco-700 dark:text-eco-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 text-eco-700 dark:text-eco-300 px-4 py-2 rounded-full text-sm font-semibold mb-4 border border-gray-200 dark:border-gray-600 shadow-sm">
               <Headphones size={16} />
               <span>24/7 Support Available</span>
             </div>
@@ -228,54 +228,62 @@ const Support = () => {
                 <div className="space-y-4">
                   <a
                     href="mailto:eba-system@ur.ac.rw"
-                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/80 group"
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                   >
                     <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-eco-100 dark:group-hover:bg-eco-900/30 transition-colors">
                       <Mail
                         size={18}
-                        className="text-gray-500 group-hover:text-eco-600"
+                        className="text-gray-500 dark:text-gray-400 group-hover:text-eco-600 dark:group-hover:text-eco-400"
                       />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Email Us</p>
-                      <p className="font-medium">{import.meta.env.VITE_APP_EMAIL}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Email Us</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {import.meta.env.VITE_APP_EMAIL}
+                      </p>
                     </div>
                   </a>
                   <a
-                    href={ "tel:" +import.meta.env.VITE_APP_CONTACT }
-                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-3 rounded-xl hover:bg-gray-50 group"
+                    href={"tel:" + import.meta.env.VITE_APP_CONTACT}
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                   >
-                    <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-eco-100 transition-colors">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-eco-100 dark:group-hover:bg-eco-900/30 transition-colors">
                       <Phone
                         size={18}
-                        className="text-gray-500 group-hover:text-eco-600"
+                        className="text-gray-500 dark:text-gray-400 group-hover:text-eco-600 dark:group-hover:text-eco-400"
                       />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Call Us</p>
-                      <p className="font-medium">{ import.meta.env.VITE_APP_CONTACT}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Call Us</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {import.meta.env.VITE_APP_CONTACT}
+                      </p>
                     </div>
                   </a>
-                  <div className="flex items-center gap-3 text-gray-600 p-3 rounded-xl bg-gray-50">
-                    <div className="p-2 bg-gray-200 rounded-lg">
-                      <Clock size={18} className="text-gray-600" />
+                  <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700">
+                    <div className="p-2 bg-gray-200/80 dark:bg-gray-700 rounded-lg">
+                      <Clock size={18} className="text-gray-600 dark:text-gray-300" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Business Hours</p>
-                      <p className="font-medium">Mon-Fri: 8:00 AM - 5:00 PM</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Business Hours</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        Mon-Fri: 8:00 AM - 5:00 PM
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-eco-50 to-teal-50 rounded-2xl p-6 border border-eco-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-4">
-                  <Sparkles size={20} className="text-eco-600" />
-                  <h2 className="text-lg font-bold text-gray-900">
+                  <div className="p-2 bg-eco-100 dark:bg-eco-900/40 rounded-xl">
+                    <Sparkles size={20} className="text-eco-600 dark:text-eco-400" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Quick Response
                   </h2>
                 </div>
-                <p className="text-gray-600 text-sm mb-3">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
                   Our average response time is under 4 hours during business
                   days.
                 </p>
@@ -283,27 +291,27 @@ const Support = () => {
                   {[...Array(5)].map((_, i) => (
                     <div
                       key={i}
-                      className="w-2 h-2 rounded-full bg-eco-400"
-                    ></div>
+                      className="w-2 h-2 rounded-full bg-eco-500 dark:bg-eco-400"
+                    />
                   ))}
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-purple-100 rounded-xl">
-                    <ExternalLink size={20} className="text-purple-600" />
+                  <div className="p-2 bg-eco-100 dark:bg-eco-900/40 rounded-xl">
+                    <ExternalLink size={20} className="text-eco-600 dark:text-eco-400" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">Resources</h2>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Resources</h2>
                 </div>
                 <div className="space-y-2">
                   <a
                     href="http://localhost:3000/api-docs/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                   >
-                    <FileText size={16} />
+                    <FileText size={16} className="shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-eco-600 dark:group-hover:text-eco-400" />
                     <span>API Documentation</span>
                     <ExternalLink
                       size={12}
@@ -312,9 +320,9 @@ const Support = () => {
                   </a>
                   <a
                     href="/blog"
-                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                   >
-                    <BookOpen size={16} />
+                    <BookOpen size={16} className="shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-eco-600 dark:group-hover:text-eco-400" />
                     <span>Technical Blog</span>
                     <ExternalLink
                       size={12}
@@ -325,9 +333,9 @@ const Support = () => {
                     href="https://github.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-600 hover:text-eco-600 transition-colors p-2 rounded-lg hover:bg-gray-50 group"
+                    className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-eco-600 dark:hover:text-eco-400 transition-colors p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group"
                   >
-                    <Github size={16} />
+                    <Github size={16} className="shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-eco-600 dark:group-hover:text-eco-400" />
                     <span>GitHub Repository</span>
                     <ExternalLink
                       size={12}
@@ -341,12 +349,12 @@ const Support = () => {
             {/* Right Column: FAQ & Form */}
             <div className="lg:col-span-2 space-y-8">
               {/* FAQ Section */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-yellow-100 rounded-xl">
-                    <HelpCircle size={20} className="text-yellow-600" />
+                  <div className="p-2 bg-eco-100 dark:bg-eco-900/40 rounded-xl">
+                    <HelpCircle size={20} className="text-eco-600 dark:text-eco-400" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Frequently Asked Questions
                   </h2>
                 </div>
@@ -354,19 +362,21 @@ const Support = () => {
                   {faqs.map((faq, index) => (
                     <details
                       key={index}
-                      className="group border border-gray-100 rounded-xl overflow-hidden"
+                      className="group border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800/80"
                     >
-                      <summary className="font-medium text-gray-800 cursor-pointer hover:text-eco-600 transition-colors list-none flex items-center justify-between p-4 bg-gray-50/50 hover:bg-gray-50 select-none">
-                        <div className="flex items-center gap-2">
-                          <span className="text-eco-500">{faq.icon}</span>
-                          <span>{faq.question}</span>
+                      <summary className="font-medium text-gray-800 dark:text-gray-100 cursor-pointer hover:text-eco-600 dark:hover:text-eco-400 transition-colors list-none flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-900/60 select-none">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-eco-600 dark:text-eco-400 shrink-0 [&_svg]:stroke-current">
+                            {faq.icon}
+                          </span>
+                          <span className="min-w-0">{faq.question}</span>
                         </div>
                         <ChevronDown
                           size={18}
-                          className="text-gray-400 group-open:rotate-180 transition-transform duration-300"
+                          className="text-gray-400 dark:text-gray-500 shrink-0 group-open:rotate-180 transition-transform duration-300"
                         />
                       </summary>
-                      <div className="p-4 text-gray-600 bg-white border-t border-gray-100 leading-relaxed animate-in slide-in-from-top-2 duration-200">
+                      <div className="p-4 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 leading-relaxed animate-in slide-in-from-top-2 duration-200">
                         {faq.answer}
                       </div>
                     </details>
@@ -375,19 +385,19 @@ const Support = () => {
               </div>
 
               {/* Contact Form */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-eco-100 rounded-xl">
-                    <MessageCircle size={20} className="text-eco-600" />
+                  <div className="p-2 bg-eco-100 dark:bg-eco-900/40 rounded-xl">
+                    <MessageCircle size={20} className="text-eco-600 dark:text-eco-400" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Send us a Message
                   </h2>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         <User size={14} className="inline mr-1" />
                         Name <span className="text-red-500">*</span>
                       </label>
@@ -397,7 +407,7 @@ const Support = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 rounded-xl border ${errors.name ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-eco-500"} focus:outline-none focus:ring-2 transition-all`}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.name ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-gray-600 focus:border-eco-500 focus:ring-eco-500/20 dark:focus:ring-eco-400/25"} focus:outline-none focus:ring-2 transition-all`}
                         placeholder="John Doe"
                       />
                       {errors.name && (
@@ -407,7 +417,7 @@ const Support = () => {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         <Mail size={14} className="inline mr-1" />
                         Email <span className="text-red-500">*</span>
                       </label>
@@ -417,7 +427,7 @@ const Support = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 rounded-xl border ${errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-eco-500"} focus:outline-none focus:ring-2 transition-all`}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-gray-600 focus:border-eco-500 focus:ring-eco-500/20 dark:focus:ring-eco-400/25"} focus:outline-none focus:ring-2 transition-all`}
                         placeholder="john@example.com"
                       />
                       {errors.email && (
@@ -429,7 +439,7 @@ const Support = () => {
                   </div>
                   <div className="grid md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         <Tag size={14} className="inline mr-1" />
                         Subject <span className="text-red-500">*</span>
                       </label>
@@ -439,7 +449,7 @@ const Support = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, subject: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 rounded-xl border ${errors.subject ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-eco-500"} focus:outline-none focus:ring-2 transition-all`}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.subject ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-gray-600 focus:border-eco-500 focus:ring-eco-500/20 dark:focus:ring-eco-400/25"} focus:outline-none focus:ring-2 transition-all`}
                         placeholder="How can we help?"
                       />
                       {errors.subject && (
@@ -449,7 +459,7 @@ const Support = () => {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Category
                       </label>
                       <select
@@ -457,7 +467,7 @@ const Support = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, category: e.target.value })
                         }
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-eco-500 transition-all bg-white"
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-eco-500/20 dark:focus:ring-eco-400/25 focus:border-eco-500 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       >
                         <option value="technical">Technical Issue</option>
                         <option value="account">Account & Billing</option>
@@ -468,7 +478,7 @@ const Support = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       <FileText size={14} className="inline mr-1" />
                       Message <span className="text-red-500">*</span>
                     </label>
@@ -478,10 +488,10 @@ const Support = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, message: e.target.value })
                       }
-                      className={`w-full px-4 py-2.5 rounded-xl border ${errors.message ? "border-red-500 focus:ring-red-500" : "border-gray-200 focus:ring-eco-500"} focus:outline-none focus:ring-2 transition-all resize-y`}
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.message ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-gray-600 focus:border-eco-500 focus:ring-eco-500/20 dark:focus:ring-eco-400/25"} focus:outline-none focus:ring-2 transition-all resize-y`}
                       placeholder="Please describe your issue in detail..."
                     />
-                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                       <AlertCircle size={12} />
                       Minimum 10 characters ({formData.message.length}/10)
                     </p>
@@ -494,7 +504,7 @@ const Support = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-eco-600 to-eco-700 text-white py-3 rounded-xl font-bold hover:from-eco-700 hover:to-eco-800 transition-all shadow-md hover:shadow-lg transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full bg-eco-600 hover:bg-eco-700 text-white py-3 rounded-xl font-semibold transition-colors shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-eco-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
                   >
                     {isLoading ? (
                       <>
