@@ -8,9 +8,11 @@ export const api = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: baseUrl,
         prepareHeaders: (headers, { getState }) => {
-            const token = getState().auth.token;
+            const token = getState().auth.token||localStorage.getItem('token');
             if (token) {
                 headers.set('authorization', `Bearer ${token}`);
+                console.log('token', token);
+
             }
             return headers;
         },
@@ -470,18 +472,6 @@ export const {
     useGetBlogByIdQuery,
     useUpdateBlogMutation,
     useDeleteBlogMutation,
-} = api;
-
-// Research Paper hooks
-export const {
-    useGetAllResearchPapersQuery,
-    useGetResearchPaperBySlugQuery,
-    useGetResearchCategoriesQuery,
-    useIncrementResearchDownloadMutation,
-    useCreateResearchPaperMutation,
-    useGetResearchPaperByIdQuery,
-    useUpdateResearchPaperMutation,
-    useDeleteResearchPaperMutation,
 } = api;
 
 // ==================== CONTACT MESSAGE HOOKS ====================
