@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setEmail } from "../../services/reducers/authReducer.js";
 import { EyeClosed, Eye, Loader2 } from "lucide-react";
@@ -12,6 +12,7 @@ function LoginForm() {
   const [loginUser, { isLoading: isMutationLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   //navigate to home page
    const navigateTo = (path) => {
@@ -61,7 +62,10 @@ function LoginForm() {
       toast.success(response.message || "Login successful! Redirecting to verification...");
 
       // Redirect to verification page after successful login
-      navigate("/verify", { replace: true });
+      navigate("/verify", {
+        replace: true,
+        state: { from: location.state?.from },
+      });
     } catch (error) {
       // Extract error message from server response
       const errorMessage = error.data?.message || error.message || "Login failed. Please check your credentials.";

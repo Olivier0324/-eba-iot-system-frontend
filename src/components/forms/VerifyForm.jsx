@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, setToken, setUser } from "../../services/reducers/authReducer";
 import { useVerifyOTPMutation, useResendOTPMutation } from "../../services/api";
@@ -10,6 +10,7 @@ import ThemeToggleButton from "../common/ThemeToggleButton.jsx";
 
 function VerifyForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const email = useSelector((state) => state.auth.email);
   const [verifyOTP, { isLoading: isVerifying }] = useVerifyOTPMutation();
@@ -84,9 +85,14 @@ function VerifyForm() {
 
       toast.success(response.message || "Verification successful!");
 
+      const targetPath = location.state?.from?.pathname || "/dashboard";
+      const targetSearch = location.state?.from?.search || "";
+      const targetHash = location.state?.from?.hash || "";
+      const destination = `${targetPath}${targetSearch}${targetHash}`;
+
       // Small delay to ensure Redux state updates before navigation
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate(destination, { replace: true });
       }, 100);
     } catch (error) {
       const errorMessage =
