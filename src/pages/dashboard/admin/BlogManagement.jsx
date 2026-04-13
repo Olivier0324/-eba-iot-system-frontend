@@ -485,7 +485,7 @@ const BlogManagement = () => {
                   onChange={(e) => {
                     const nextTitle = e.target.value;
                     setFormData((prev) => {
-                      if (prev.tags.trim() || !nextTitle.trim()) {
+                      if (editingBlog || prev.tags.trim() || !nextTitle.trim()) {
                         return { ...prev, title: nextTitle };
                       }
                       const suggestedTags = suggestTagsFromText(
@@ -606,7 +606,7 @@ const BlogManagement = () => {
                   <button
                     type="button"
                     onClick={applyAutoFill}
-                    className="text-xs font-medium text-eco-600 hover:text-eco-700 dark:text-eco-400 dark:hover:text-eco-300"
+                    className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-eco-100 text-eco-700 hover:bg-eco-200 dark:bg-eco-900/40 dark:text-eco-300 dark:hover:bg-eco-900/60"
                   >
                     Auto-fill from content
                   </button>
@@ -634,6 +634,12 @@ const BlogManagement = () => {
                   value={formData.content}
                   onChange={(e) => {
                     const nextContent = e.target.value;
+                    if (editingBlog) {
+                      // Editing mode should be predictable for typo fixes:
+                      // only update the content field unless user clicks Auto-fill.
+                      setFormData((prev) => ({ ...prev, content: nextContent }));
+                      return;
+                    }
                     setFormData((prev) => {
                       const nextReadTime = estimateReadTimeMinutes(nextContent);
                       const shouldUpdateExcerpt =
