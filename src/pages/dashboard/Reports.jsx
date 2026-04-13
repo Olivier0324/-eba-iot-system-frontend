@@ -1,6 +1,6 @@
 // src/pages/dashboard/Reports.jsx
 import React, { useState } from "react";
-import { Eye, Trash2, Loader2, Plus, FileDown } from "lucide-react";
+import { Eye, Trash2, Loader2, Plus } from "lucide-react";
 import {
   useGenerateReportMutation,
   useGetReportsQuery,
@@ -192,17 +192,6 @@ function Reports() {
                     >
                       <Eye size={18} />
                     </a>
-                    {report.downloadUrl && (
-                      <a
-                        href={report.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1 text-gray-500 hover:text-eco-600 transition-colors"
-                        title="Download report"
-                      >
-                        <FileDown size={18} />
-                      </a>
-                    )}
                     <button
                       onClick={() => handleDelete(report._id)}
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors"
