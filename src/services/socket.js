@@ -3,11 +3,9 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
-
-/** Set to "1" to allow WebSocket after connect (faster when it works; Chrome logs failed wss on bad proxies). */
-const allowSocketUpgrade =
-  import.meta.env.VITE_SOCKET_USE_WEBSOCKET === "1";
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  "https://eba-iot-system-backend.vercel.app";
 
 /** `VITE_ENABLE_SOCKET=0` — skip Socket.IO entirely (no /socket.io requests, no 404 spam in DevTools). */
 function isSocketClientEnabled() {
@@ -30,9 +28,10 @@ export const connectSocket = (token) => {
   }
 
   socket = io(SOCKET_URL, {
+    path: "/socket.io",
     auth: { token },
-    transports: allowSocketUpgrade ? ["polling", "websocket"] : ["polling"],
-    upgrade: allowSocketUpgrade,
+    transports: ["websocket"],
+    upgrade: false,
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
