@@ -63,6 +63,27 @@ function formatTypeLabel(type) {
   return type;
 }
 
+function actorLabel(actor) {
+  if (!actor) return "";
+  if (typeof actor === "string") return actor;
+  return (
+    actor.username ||
+    actor.name ||
+    actor.email ||
+    actor.fullName ||
+    actor.id ||
+    actor._id ||
+    ""
+  );
+}
+
+function toLocalDateTime(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString();
+}
+
 function Alerts() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -278,6 +299,47 @@ function Alerts() {
                             {new Date(alert.createdAt).toLocaleString()}
                           </span>
                         </div>
+                        {(alert.status === "acknowledged" ||
+                          alert.status === "resolved") && (
+                          <div className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                            {(() => {
+                              const ackBy = actorLabel(
+                                alert.acknowledgedBy || alert.ackBy,
+                              );
+                              const ackAt = toLocalDateTime(
+                                alert.acknowledgedAt || alert.ackAt,
+                              );
+                              if (!ackBy && !ackAt) return null;
+                              return (
+                                <p>
+                                  Acknowledged by{" "}
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                                    {ackBy || "staff"}
+                                  </span>
+                                  {ackAt ? ` at ${ackAt}` : ""}
+                                </p>
+                              );
+                            })()}
+                            {(() => {
+                              const resolvedBy = actorLabel(
+                                alert.resolvedBy || alert.resolvedByUser,
+                              );
+                              const resolvedAt = toLocalDateTime(
+                                alert.resolvedAt,
+                              );
+                              if (!resolvedBy && !resolvedAt) return null;
+                              return (
+                                <p>
+                                  Resolved by{" "}
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                                    {resolvedBy || "staff"}
+                                  </span>
+                                  {resolvedAt ? ` at ${resolvedAt}` : ""}
+                                </p>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2 shrink-0 lg:justify-end">
