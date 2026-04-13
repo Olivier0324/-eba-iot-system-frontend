@@ -340,7 +340,7 @@ const LandingPage = () => {
                   </div>
                 </div>
                 <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Real-time data from Nyabugogo wetland
+                  Live preview from our prototype database stream
                 </div>
               </div>
             </motion.div>
@@ -353,13 +353,13 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { number: "3", label: "Active Monitoring Sites", icon: MapPin },
+              { number: "Prototype", label: "Monitoring Stage", icon: MapPin },
               {
                 number: "5+",
                 label: "Environmental Parameters",
                 icon: Activity,
               },
-              { number: "24/7", label: "Real-time Monitoring", icon: Wifi },
+              { number: "Live", label: "Dashboard Data Preview", icon: Wifi },
               { number: "100%", label: "Data Reliability", icon: CheckCircle },
             ].map((stat, idx) => (
               <motion.div
@@ -587,7 +587,7 @@ const LandingPage = () => {
                 icon: Database,
                 title: "Real-Time Monitoring",
                 description:
-                  "Continuous data collection from IoT sensors deployed in EbA sites",
+                  "Prototype data streaming from our IoT dashboard database",
                 color: "from-eco-500 to-eco-600",
               },
               {
@@ -601,7 +601,7 @@ const LandingPage = () => {
                 icon: Wifi,
                 title: "Wireless Connectivity",
                 description:
-                  "Cellular and LPWAN technology for remote site connectivity",
+                  "Wi-Fi technology for remote site connectivity",
                 color: "from-teal-500 to-teal-600",
               },
             ].map((feature, idx) => (
