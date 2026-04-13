@@ -123,6 +123,7 @@ const UserManagement = () => {
     username: "",
     email: "",
     password: "",
+    newPassword: "",
     role: "user",
     isActive: true,
   });
@@ -149,6 +150,9 @@ const UserManagement = () => {
     } else if (!editingUser && formData.password.length < 6) {
       errors.password = "Password must be at least 6 characters";
     }
+    if (editingUser && formData.newPassword && formData.newPassword.length < 6) {
+      errors.newPassword = "Reset password must be at least 6 characters";
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -166,6 +170,9 @@ const UserManagement = () => {
           role: formData.role,
           isActive: formData.isActive,
         };
+        if (formData.newPassword.trim()) {
+          updateData.newPassword = formData.newPassword.trim();
+        }
         await updateUser(updateData).unwrap();
         toast.success("User updated successfully");
       } else {
@@ -187,6 +194,7 @@ const UserManagement = () => {
       username: "",
       email: "",
       password: "",
+      newPassword: "",
       role: "user",
       isActive: true,
     });
@@ -248,6 +256,7 @@ const UserManagement = () => {
       username: user.username,
       email: user.email,
       password: "",
+      newPassword: "",
       role: user.role,
       isActive: parseUserActive(user.isActive) ?? true,
     });
@@ -707,6 +716,7 @@ const UserManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
                   }
+                  disabled={editingUser?.role === "admin"}
                   className={`${dashboardInputClass} ${
                     formErrors.username
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -730,6 +740,7 @@ const UserManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
+                  disabled={editingUser?.role === "admin"}
                   className={`${dashboardInputClass} ${
                     formErrors.email
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -777,6 +788,51 @@ const UserManagement = () => {
                   {formErrors.password && (
                     <p className="text-xs text-red-500 mt-1">
                       {formErrors.password}
+                    </p>
+                  )}
+                </div>
+              )}
+              {editingUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Reset Password (optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={formData.newPassword}
+                      onChange={(e) =>
+                        setFormData({ ...formData, newPassword: e.target.value })
+                      }
+                      disabled={editingUser?.role === "admin"}
+                      className={`${dashboardInputClass} pr-10 ${
+                        formErrors.newPassword
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                          : ""
+                      }`}
+                      minLength={6}
+                      placeholder={
+                        editingUser?.role === "admin"
+                          ? "Admin password reset blocked by backend policy"
+                          : "Leave empty to keep current password"
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {editingUser?.role === "admin"
+                      ? "For admin accounts, backend allows only role and activation changes."
+                      : "Provide a new value to reset this user's password."}
+                  </p>
+                  {formErrors.newPassword && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {formErrors.newPassword}
                     </p>
                   )}
                 </div>

@@ -468,7 +468,9 @@ function Dashboard() {
                     to={item.path}
                     title={item.name}
                     className={`flex items-center rounded-xl transition-all duration-200 group ${
-                      sidebarCollapsed ? "md:justify-center md:px-2 md:py-3" : "px-4 py-3"
+                      sidebarCollapsed
+                        ? "px-4 py-3 md:justify-center md:px-2 md:py-3"
+                        : "px-4 py-3"
                     } ${
                       location.pathname === item.path
                         ? `bg-linear-to-br from-eco-500/10 to-ocean-500/10 text-eco-600 dark:text-eco-400 ${
@@ -501,7 +503,7 @@ function Dashboard() {
                     title="Administration"
                     className={`w-full flex items-center rounded-xl transition-all duration-200 group ${
                       sidebarCollapsed
-                        ? "md:justify-center md:px-2 md:py-3"
+                        ? "justify-between px-4 py-3 md:justify-center md:px-2 md:py-3"
                         : "justify-between px-4 py-3"
                     } ${
                       adminItems.some((item) => location.pathname === item.path)
@@ -534,7 +536,7 @@ function Dashboard() {
                     <ul
                       className={
                         sidebarCollapsed
-                          ? "absolute left-full top-0 z-[60] ml-1 mt-0 min-w-50 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg space-y-0.5"
+                          ? "ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800 md:absolute md:left-full md:top-0 md:z-[60] md:ml-1 md:mt-0 md:min-w-50 md:rounded-xl md:border md:border-gray-200 md:dark:border-gray-700 md:bg-white md:dark:bg-gray-800 md:py-1 md:shadow-lg md:space-y-0.5 md:border-l-0"
                           : "ml-6 mt-1 space-y-1 border-l-2 border-eco-200 dark:border-eco-800"
                       }
                     >
@@ -545,7 +547,9 @@ function Dashboard() {
                             title={item.name}
                             onClick={() => setAdminMenuOpen(false)}
                             className={`flex items-center rounded-lg transition-all duration-200 ${
-                              sidebarCollapsed ? "px-3 py-2" : "px-4 py-2.5"
+                              sidebarCollapsed
+                                ? "px-4 py-2.5 md:px-3 md:py-2"
+                                : "px-4 py-2.5"
                             } ${
                               location.pathname === item.path
                                 ? "text-eco-600 dark:text-eco-400 bg-eco-50 dark:bg-eco-900/20"
@@ -579,7 +583,9 @@ function Dashboard() {
               disabled={isLoading}
               title="Log out"
               className={`flex items-center w-full rounded-xl text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group ${
-                sidebarCollapsed ? "md:justify-center md:px-2 md:py-3" : "px-4 py-3"
+                sidebarCollapsed
+                  ? "px-4 py-3 md:justify-center md:px-2 md:py-3"
+                  : "px-4 py-3"
               }`}
             >
               {isLoading ? (

@@ -29,6 +29,70 @@ import {
   modalSecondaryButtonClass,
 } from "../../../components/common/modalStyles";
 
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "that",
+  "this",
+  "from",
+  "your",
+  "into",
+  "about",
+  "their",
+  "have",
+  "will",
+  "were",
+  "been",
+  "when",
+  "where",
+  "what",
+  "which",
+  "while",
+  "using",
+  "also",
+  "than",
+  "then",
+  "them",
+  "they",
+  "you",
+  "our",
+  "are",
+  "but",
+  "can",
+  "not",
+  "too",
+]);
+
+function estimateReadTimeMinutes(content) {
+  const words = content
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
+function buildExcerpt(content, maxLen = 220) {
+  const clean = content.replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  if (clean.length <= maxLen) return clean;
+  return `${clean.slice(0, maxLen).trimEnd()}...`;
+}
+
+function suggestTagsFromText(text, maxTags = 6) {
+  const counts = new Map();
+  const words = text.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) ?? [];
+  words.forEach((word) => {
+    if (STOP_WORDS.has(word)) return;
+    counts.set(word, (counts.get(word) ?? 0) + 1);
+  });
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxTags)
+    .map(([word]) => word);
+}
+
 const BlogManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -61,6 +125,18 @@ const BlogManagement = () => {
     published: false,
     featuredImage: "",
   });
+
+  const applyAutoFill = () => {
+    const content = formData.content.trim();
+    if (!content) return;
+    const suggestedTags = suggestTagsFromText(`${formData.title} ${content}`);
+    setFormData((prev) => ({
+      ...prev,
+      readTime: estimateReadTimeMinutes(content),
+      excerpt: prev.excerpt.trim() ? prev.excerpt : buildExcerpt(content),
+      tags: prev.tags.trim() ? prev.tags : suggestedTags.join(", "),
+    }));
+  };
 
   // Extract blogs from response - handle different response structures
   const blogs = blogsResponse?.data || blogsResponse || [];
@@ -406,9 +482,22 @@ const BlogManagement = () => {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const nextTitle = e.target.value;
+                    setFormData((prev) => {
+                      if (prev.tags.trim() || !nextTitle.trim()) {
+                        return { ...prev, title: nextTitle };
+                      }
+                      const suggestedTags = suggestTagsFromText(
+                        `${nextTitle} ${prev.content}`,
+                      );
+                      return {
+                        ...prev,
+                        title: nextTitle,
+                        tags: suggestedTags.join(", "),
+                      };
+                    });
+                  }}
                   placeholder="Enter blog title"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent transition-all"
                   required
@@ -459,6 +548,9 @@ const BlogManagement = () => {
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-eco-500 transition-all"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Auto-estimated from content (~200 words/min)
+                  </p>
                 </div>
               </div>
 
@@ -507,9 +599,18 @@ const BlogManagement = () => {
 
               {/* Excerpt */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Excerpt
-                </label>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Excerpt
+                  </label>
+                  <button
+                    type="button"
+                    onClick={applyAutoFill}
+                    className="text-xs font-medium text-eco-600 hover:text-eco-700 dark:text-eco-400 dark:hover:text-eco-300"
+                  >
+                    Auto-fill from content
+                  </button>
+                </div>
                 <textarea
                   value={formData.excerpt}
                   onChange={(e) =>
@@ -531,9 +632,23 @@ const BlogManagement = () => {
                 </label>
                 <textarea
                   value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const nextContent = e.target.value;
+                    setFormData((prev) => {
+                      const nextReadTime = estimateReadTimeMinutes(nextContent);
+                      const shouldUpdateExcerpt =
+                        !prev.excerpt.trim() ||
+                        prev.excerpt === buildExcerpt(prev.content);
+                      return {
+                        ...prev,
+                        content: nextContent,
+                        readTime: nextReadTime,
+                        excerpt: shouldUpdateExcerpt
+                          ? buildExcerpt(nextContent)
+                          : prev.excerpt,
+                      };
+                    });
+                  }}
                   rows={10}
                   placeholder="Write your blog content here..."
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent resize-none transition-all"
