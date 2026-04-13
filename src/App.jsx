@@ -65,6 +65,14 @@ function App() {
                 </RequireStaffInsights>
               }
             />
+            <Route
+              path="alerts/:id"
+              element={
+                <RequireStaffInsights>
+                  <Alerts />
+                </RequireStaffInsights>
+              }
+            />
             <Route path="analytics" element={<Analytics />} />
             <Route
               path="notifications"

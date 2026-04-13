@@ -463,6 +463,7 @@ export const {
 // Blog hooks
 export const {
     useGetAllBlogsQuery,
+    useLazyGetBlogByIdQuery,
     useGetBlogBySlugQuery,
     useGetBlogCategoriesQuery,
     useCreateBlogMutation,

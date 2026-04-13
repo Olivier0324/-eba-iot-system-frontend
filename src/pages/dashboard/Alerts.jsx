@@ -10,8 +10,10 @@ import {
   TriangleAlert,
   Info,
 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetAlertsQuery,
+  useGetAlertByIdQuery,
   useResolveAlertMutation,
   useAcknowledgeAlertMutation,
 } from "../../services/api";
@@ -62,6 +64,9 @@ function formatTypeLabel(type) {
 }
 
 function Alerts() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isSingleView = Boolean(id);
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -70,12 +75,21 @@ function Alerts() {
     data: alertsData,
     isLoading,
     refetch,
-  } = useGetAlertsQuery({ status: filter !== "all" ? filter : undefined });
+  } = useGetAlertsQuery(
+    { status: filter !== "all" ? filter : undefined },
+    { skip: isSingleView },
+  );
   const [resolveAlert, { isLoading: isResolving }] = useResolveAlertMutation();
   const [acknowledgeAlert, { isLoading: isAcknowledging }] =
     useAcknowledgeAlertMutation();
+  const { data: alertByIdData, isLoading: isSingleLoading } = useGetAlertByIdQuery(
+    id,
+    { skip: !id },
+  );
 
-  const alerts = alertsData?.data || alertsData || [];
+  const alerts = isSingleView
+    ? [alertByIdData].filter(Boolean)
+    : alertsData?.data || alertsData || [];
   const totalAlerts = alertsData?.totalItems || alerts.length;
 
   const offset = currentPage * itemsPerPage;
@@ -147,7 +161,7 @@ function Alerts() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isSingleLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-3">
         <Loader2 className="animate-spin h-8 w-8 text-eco-600" />
@@ -163,22 +177,32 @@ function Alerts() {
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Alerts
+            {isSingleView ? "Alert Details" : "Alerts"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Total: {totalAlerts} alerts
+            {isSingleView ? `Alert ID: ${id}` : `Total: ${totalAlerts} alerts`}
           </p>
         </div>
-        <FilterPills
-          ariaLabel="Filter alerts by status"
-          options={FILTER_OPTIONS}
-          value={filter}
-          onChange={(next) => {
-            setFilter(next);
-            setCurrentPage(0);
-          }}
-          className="w-full sm:w-auto"
-        />
+        {isSingleView ? (
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/alerts")}
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Back to alerts
+          </button>
+        ) : (
+          <FilterPills
+            ariaLabel="Filter alerts by status"
+            options={FILTER_OPTIONS}
+            value={filter}
+            onChange={(next) => {
+              setFilter(next);
+              setCurrentPage(0);
+            }}
+            className="w-full sm:w-auto"
+          />
+        )}
       </div>
 
       <div className="space-y-4">
@@ -300,13 +324,15 @@ function Alerts() {
         )}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageClick}
-        itemsPerPage={itemsPerPage}
-        totalItems={alerts.length}
-      />
+      {!isSingleView && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageClick}
+          itemsPerPage={itemsPerPage}
+          totalItems={alerts.length}
+        />
+      )}
     </div>
   );
 }

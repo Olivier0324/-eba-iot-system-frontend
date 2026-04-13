@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import {
   useGetAllBlogsQuery,
+  useLazyGetBlogByIdQuery,
   useCreateBlogMutation,
   useUpdateBlogMutation,
   useDeleteBlogMutation,
@@ -113,6 +114,7 @@ const BlogManagement = () => {
   const [createBlog] = useCreateBlogMutation();
   const [updateBlog] = useUpdateBlogMutation();
   const [deleteBlog] = useDeleteBlogMutation();
+  const [fetchBlogById] = useLazyGetBlogByIdQuery();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -228,18 +230,27 @@ const BlogManagement = () => {
     }
   };
 
-  const handleEdit = (blog) => {
-    setEditingBlog(blog);
+  const handleEdit = async (blog) => {
+    let source = blog;
+    try {
+      // List responses are sometimes summarized; fetch full post to ensure content is editable.
+      const full = await fetchBlogById(blog._id).unwrap();
+      if (full && typeof full === "object") source = full;
+    } catch {
+      toast.info("Editing with list data (full post fetch unavailable)");
+    }
+
+    setEditingBlog(source);
     setFormData({
-      title: blog.title || "",
-      excerpt: blog.excerpt || "",
-      content: blog.content || "",
-      author: blog.author || "",
-      category: blog.category || "tutorial",
-      readTime: blog.readTime || 5,
-      tags: blog.tags?.join(", ") || "",
-      published: blog.published || false,
-      featuredImage: blog.featuredImage || "",
+      title: source.title || "",
+      excerpt: source.excerpt || "",
+      content: source.content || "",
+      author: source.author || "",
+      category: source.category || "tutorial",
+      readTime: source.readTime || 5,
+      tags: source.tags?.join(", ") || "",
+      published: source.published || false,
+      featuredImage: source.featuredImage || "",
     });
     setShowModal(true);
   };
