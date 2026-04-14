@@ -23,6 +23,7 @@ import {
 import {
   useGetAllSensorDataQuery,
   useGetAlertStatisticsQuery,
+  useGetActiveAlertsQuery,
 } from "../../services/api";
 import { format, subDays } from "date-fns";
 import Pagination from "../../components/common/Pagination";
@@ -60,6 +61,7 @@ function Analytics() {
   const { data: alertStats } = useGetAlertStatisticsQuery({
     days: period === "7d" ? 7 : period === "30d" ? 30 : 90,
   });
+  const { data: activeAlertsData } = useGetActiveAlertsQuery();
 
   const [chartData1, setChartData1] = useState({ labels: [], datasets: [] });
   const [chartData2, setChartData2] = useState({ labels: [], datasets: [] });
@@ -249,6 +251,29 @@ function Analytics() {
   };
 
   const statsCards = [
+    (() => {
+      const parsedFromStats = Number(
+        alertStats?.activeAlerts ??
+          alertStats?.active ??
+          alertStats?.activeCount ??
+          alertStats?.counts?.active ??
+          alertStats?.alerts?.active,
+      );
+      const activeFallback = Array.isArray(activeAlertsData)
+        ? activeAlertsData.length
+        : Number(activeAlertsData?.totalItems ?? activeAlertsData?.count ?? 0);
+      const activeAlertsCount = Number.isFinite(parsedFromStats)
+        ? parsedFromStats
+        : activeFallback;
+      return {
+        id: "active-alerts",
+        label: "Active Alerts",
+        value: activeAlertsCount,
+        unit: "",
+        icon: Activity,
+        color: activeAlertsCount > 0 ? "text-red-500" : "text-green-500",
+      };
+    })(),
     {
       id: "avg-temp",
       label: "Avg Temperature",
@@ -298,15 +323,6 @@ function Analytics() {
       unit: "%",
       icon: Waves,
       color: "text-blue-600",
-    },
-    {
-      id: "active-alerts",
-      label: "Active Alerts",
-      value: alertStats?.activeAlerts || 0,
-      unit: "",
-      icon: Activity,
-      color:
-        (alertStats?.activeAlerts || 0) > 0 ? "text-red-500" : "text-green-500",
     },
   ];
 

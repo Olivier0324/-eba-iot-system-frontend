@@ -65,10 +65,16 @@ function formatTypeLabel(type) {
 
 function actorLabel(actor) {
   if (!actor) return "";
-  if (typeof actor === "string") return actor;
+  if (typeof actor === "string") {
+    // Keep UI human-friendly if backend returns only Mongo ObjectId.
+    if (/^[a-fA-F0-9]{24}$/.test(actor.trim())) return "Staff user";
+    return actor;
+  }
   return (
     actor.username ||
     actor.name ||
+    actor.displayName ||
+    actor.firstName ||
     actor.email ||
     actor.fullName ||
     actor.id ||
@@ -304,7 +310,14 @@ function Alerts() {
                           <div className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
                             {(() => {
                               const ackBy = actorLabel(
-                                alert.acknowledgedBy || alert.ackBy,
+                                alert.acknowledgedBy ||
+                                  alert.acknowledgedByUser ||
+                                  alert.acknowledgedByInfo ||
+                                  alert.acknowledgedByDetails ||
+                                  alert.ackBy ||
+                                  alert.ackByUser ||
+                                  alert.ackUser ||
+                                  alert.acknowledgedByName,
                               );
                               const ackAt = toLocalDateTime(
                                 alert.acknowledgedAt || alert.ackAt,
@@ -322,7 +335,11 @@ function Alerts() {
                             })()}
                             {(() => {
                               const resolvedBy = actorLabel(
-                                alert.resolvedBy || alert.resolvedByUser,
+                                alert.resolvedBy ||
+                                  alert.resolvedByUser ||
+                                  alert.resolvedByInfo ||
+                                  alert.resolvedByDetails ||
+                                  alert.resolvedByName,
                               );
                               const resolvedAt = toLocalDateTime(
                                 alert.resolvedAt,
