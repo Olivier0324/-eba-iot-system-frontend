@@ -55,6 +55,10 @@ function rowKey(reading, idx) {
   return `${reading?.timestamp ?? "row"}-${idx}`;
 }
 
+function toNumericOrNull(v) {
+  return isNumericSensorValue(v) ? Number(v) : null;
+}
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -175,7 +179,9 @@ function Sensors() {
         selectedMetric === "all"
           ? metrics.map((metric) => ({
               label: metric.label,
-              data: chartPageReadingsChrono.map((d) => d[metric.key] ?? 0),
+              data: chartPageReadingsChrono.map((d) =>
+                toNumericOrNull(d[metric.key]),
+              ),
               borderColor: metric.color,
               backgroundColor: `${metric.color}20`,
               tension: 0.4,
@@ -186,7 +192,7 @@ function Sensors() {
               {
                 label: metrics.find((m) => m.key === selectedMetric)?.label,
                 data: chartPageReadingsChrono.map(
-                  (d) => d[selectedMetric] ?? 0,
+                  (d) => toNumericOrNull(d[selectedMetric]),
                 ),
                 borderColor: "#2E7D32",
                 backgroundColor: "#2E7D3220",

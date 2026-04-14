@@ -76,6 +76,16 @@ function Analytics() {
     hasWaterData: false,
   });
 
+  const isValidNumber = (value) =>
+    value !== null && value !== undefined && value !== "" && !Number.isNaN(Number(value));
+
+  const hasCompleteReading = (reading) =>
+    isValidNumber(reading?.temperature) &&
+    isValidNumber(reading?.humidity) &&
+    isValidNumber(reading?.co2_ppm) &&
+    isValidNumber(reading?.soil_moisture_percent) &&
+    isValidNumber(reading?.water_level_percent);
+
   // Filter data by custom date range (when set, this overrides the 7/30/90 window)
   const filterDataByDate = (data) => {
     if (!startDate && !endDate) return data;
@@ -169,16 +179,17 @@ function Analytics() {
   useEffect(() => {
     if (sensorData && Array.isArray(sensorData)) {
       const filtered = filterDataByPeriod(filterDataByDate(sensorData));
-      setFilteredData(filtered);
+      const completeReadings = filtered.filter(hasCompleteReading);
+      setFilteredData(completeReadings);
 
       // Calculate stats from filtered data
-      const stats = calculateStatsFromData(filtered);
+      const stats = calculateStatsFromData(completeReadings);
       setCalculatedStats(stats);
 
       // Limit data for charts (max 100 points for performance)
       const maxPoints = 100;
-      const step = Math.max(1, Math.floor(filtered.length / maxPoints));
-      const sampledData = filtered.filter((_, index) => index % step === 0);
+      const step = Math.max(1, Math.floor(completeReadings.length / maxPoints));
+      const sampledData = completeReadings.filter((_, index) => index % step === 0);
 
       const labels = sampledData.map((d) =>
         format(new Date(d.timestamp), "MM/dd HH:mm"),
@@ -504,43 +515,42 @@ function Analytics() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {paginatedData.map((reading, idx) => (
-                <tr
-                  key={idx}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.temperature != null && !Number.isNaN(reading.temperature)
-                      ? `${Number(reading.temperature).toFixed(1)}°C`
-                      : "N/A"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.humidity != null && !Number.isNaN(reading.humidity)
-                      ? `${Number(reading.humidity).toFixed(1)}%`
-                      : "N/A"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.co2_ppm != null && !Number.isNaN(reading.co2_ppm)
-                      ? `${reading.co2_ppm} ppm`
-                      : "N/A"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.soil_moisture_percent !== undefined &&
-                    reading.soil_moisture_percent !== null
-                      ? `${reading.soil_moisture_percent}%`
-                      : "N/A"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                    {reading.water_level_percent !== undefined &&
-                    reading.water_level_percent !== null
-                      ? `${reading.water_level_percent}%`
-                      : "N/A"}
+              {paginatedData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-6 text-sm text-center text-gray-500 dark:text-gray-400"
+                  >
+                    No complete sensor readings available
                   </td>
                 </tr>
-              ))}
+              ) : (
+                paginatedData.map((reading, idx) => (
+                  <tr
+                    key={idx}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {format(new Date(reading.timestamp), "MM/dd/yyyy HH:mm:ss")}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {`${Number(reading.temperature).toFixed(1)}°C`}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {`${Number(reading.humidity).toFixed(1)}%`}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {`${Number(reading.co2_ppm)} ppm`}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {`${Number(reading.soil_moisture_percent)}%`}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {`${Number(reading.water_level_percent)}%`}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

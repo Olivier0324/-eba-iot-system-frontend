@@ -50,6 +50,14 @@ function Overview() {
   const [endDate, setEndDate] = useState(null);
   const itemsPerPage = 10;
 
+  const isValidNumber = (v) => v != null && v !== "" && !Number.isNaN(Number(v));
+  const hasCompleteReading = (row) =>
+    isValidNumber(row?.temperature) &&
+    isValidNumber(row?.humidity) &&
+    isValidNumber(row?.co2_ppm) &&
+    isValidNumber(row?.soil_moisture_percent) &&
+    isValidNumber(row?.water_level_percent);
+
   // Filter data by date range
   const filterDataByDate = (data) => {
     if (!startDate && !endDate) return data;
@@ -75,7 +83,8 @@ function Overview() {
       const newestFirst = [...filteredData].sort(
         (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
       );
-      setLatestReading(newestFirst[0] ?? null);
+      const newestComplete = newestFirst.find(hasCompleteReading);
+      setLatestReading(newestComplete ?? newestFirst[0] ?? null);
       setCurrentPage(0);
     }
   }, [sensorData, startDate, endDate]);
@@ -175,8 +184,9 @@ function Overview() {
     },
   ];
 
-  const validReadings = recentReadings.filter(
-    (d) => d.temperature != null && d.humidity != null,
+  const validReadings = useMemo(
+    () => recentReadings.filter(hasCompleteReading),
+    [recentReadings],
   );
 
   const offset = currentPage * itemsPerPage;
@@ -524,7 +534,7 @@ function Overview() {
           </table>
           {validReadings.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              No sensor data available
+              No complete sensor readings available
             </div>
           )}
         </div>
