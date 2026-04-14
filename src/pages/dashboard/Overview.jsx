@@ -26,6 +26,8 @@ import { useGetAllSensorDataQuery } from "../../services/api";
 import Pagination from "../../components/common/Pagination";
 import DateRangeFilterBar from "../../components/common/DateRangeFilterBar";
 
+const OVERVIEW_CHART_MAX_POINTS = 200;
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -181,13 +183,18 @@ function Overview() {
   const paginatedReadings = validReadings.slice(offset, offset + itemsPerPage);
   const totalPages = Math.ceil(validReadings.length / itemsPerPage);
 
-  /** Same rows as the readings table page, oldest → newest on the time axis. */
+  /**
+   * Overview chart should reflect the whole filtered window (not just one paginated table page).
+   * Keep only the latest N points for rendering speed on large datasets.
+   */
   const chartReadings = useMemo(
-    () =>
-      [...paginatedReadings].sort(
+    () => {
+      const sorted = [...recentReadings].sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
-      ),
-    [paginatedReadings],
+      );
+      return sorted.slice(-OVERVIEW_CHART_MAX_POINTS);
+    },
+    [recentReadings],
   );
 
   const chartLabels = chartReadings.map((d) =>
@@ -412,8 +419,8 @@ function Overview() {
               Environmental Trends
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Chart matches the current page of &ldquo;Recent readings&rdquo;
-              below (same time window).
+              Chart covers the full filtered time window (latest{" "}
+              {OVERVIEW_CHART_MAX_POINTS} points max for performance).
             </p>
           </div>
           {chartReadings.length > 0 ? (
