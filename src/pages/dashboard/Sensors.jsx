@@ -72,7 +72,14 @@ ChartJS.register(
 
 function Sensors() {
   const [selectedMetric, setSelectedMetric] = useState("all");
-  const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery();
+  const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery(
+    undefined,
+    {
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
   const [fetchSensorExport] = useLazyGetAllSensorDataQuery();
   const [sensorReadings, setSensorReadings] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);

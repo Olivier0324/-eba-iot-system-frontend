@@ -57,11 +57,23 @@ function Analytics() {
   const itemsPerPage = 10;
 
   const { data: sensorData, isLoading: sensorLoading } =
-    useGetAllSensorDataQuery();
+    useGetAllSensorDataQuery(undefined, {
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
   const { data: alertStats } = useGetAlertStatisticsQuery({
     days: period === "7d" ? 7 : period === "30d" ? 30 : 90,
+  }, {
+    pollingInterval: 20000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
   });
-  const { data: activeAlertsData } = useGetActiveAlertsQuery();
+  const { data: activeAlertsData } = useGetActiveAlertsQuery(undefined, {
+    pollingInterval: 20000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   const [chartData1, setChartData1] = useState({ labels: [], datasets: [] });
   const [chartData2, setChartData2] = useState({ labels: [], datasets: [] });

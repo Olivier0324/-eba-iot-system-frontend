@@ -42,7 +42,11 @@ ChartJS.register(
 
 function Overview() {
   const { data: sensorData, isLoading: sensorLoading } =
-    useGetAllSensorDataQuery();
+    useGetAllSensorDataQuery(undefined, {
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
   const [recentReadings, setRecentReadings] = useState([]);
   const [latestReading, setLatestReading] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);

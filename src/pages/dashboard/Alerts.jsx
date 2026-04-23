@@ -95,6 +95,7 @@ function Alerts() {
   const navigate = useNavigate();
   const isSingleView = Boolean(id);
   const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
@@ -104,20 +105,49 @@ function Alerts() {
     refetch,
   } = useGetAlertsQuery(
     { status: filter !== "all" ? filter : undefined },
-    { skip: isSingleView },
+    {
+      skip: isSingleView,
+      pollingInterval: 20000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
   );
   const [resolveAlert, { isLoading: isResolving }] = useResolveAlertMutation();
   const [acknowledgeAlert, { isLoading: isAcknowledging }] =
     useAcknowledgeAlertMutation();
   const { data: alertByIdData, isLoading: isSingleLoading } = useGetAlertByIdQuery(
     id,
-    { skip: !id },
+    {
+      skip: !id,
+      pollingInterval: 20000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
   );
 
-  const alerts = isSingleView
+  const baseAlerts = isSingleView
     ? [alertByIdData].filter(Boolean)
     : alertsData?.data || alertsData || [];
-  const totalAlerts = alertsData?.totalItems || alerts.length;
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const alerts = normalizedSearch
+    ? baseAlerts.filter((alert) => {
+        const haystack = [
+          alert?.title,
+          alert?.message,
+          alert?.type,
+          alert?.severity,
+          alert?.status,
+          alert?.value,
+          alert?.threshold,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(normalizedSearch);
+      })
+    : baseAlerts;
+  const totalAlerts = alerts.length;
+  const totalAlertsUnfiltered = baseAlerts.length;
 
   const offset = currentPage * itemsPerPage;
   const paginatedAlerts = alerts.slice(offset, offset + itemsPerPage);
@@ -207,7 +237,11 @@ function Alerts() {
             {isSingleView ? "Alert Details" : "Alerts"}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {isSingleView ? `Alert ID: ${id}` : `Total: ${totalAlerts} alerts`}
+            {isSingleView
+              ? `Alert ID: ${id}`
+              : normalizedSearch
+                ? `Showing ${totalAlerts} of ${totalAlertsUnfiltered} alerts`
+                : `Total: ${totalAlertsUnfiltered} alerts`}
           </p>
         </div>
         {isSingleView ? (
@@ -219,16 +253,28 @@ function Alerts() {
             Back to alerts
           </button>
         ) : (
-          <FilterPills
-            ariaLabel="Filter alerts by status"
-            options={FILTER_OPTIONS}
-            value={filter}
-            onChange={(next) => {
-              setFilter(next);
-              setCurrentPage(0);
-            }}
-            className="w-full sm:w-auto"
-          />
+          <div className="w-full sm:w-auto flex flex-col gap-2 sm:items-end">
+            <FilterPills
+              ariaLabel="Filter alerts by status"
+              options={FILTER_OPTIONS}
+              value={filter}
+              onChange={(next) => {
+                setFilter(next);
+                setCurrentPage(0);
+              }}
+              className="w-full sm:w-auto"
+            />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0);
+              }}
+              placeholder="Search alerts..."
+              className="w-full sm:w-72 min-h-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-eco-500/60"
+            />
+          </div>
         )}
       </div>
 
