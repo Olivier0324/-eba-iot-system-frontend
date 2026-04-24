@@ -555,7 +555,7 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-                  To design and prototype a web-based application
+                  To prototype a web-based application
                     dashboard for the visualization of real-time and historical
                     environmental data to support decision-making.
                   </span>
