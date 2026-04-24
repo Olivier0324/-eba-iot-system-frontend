@@ -111,11 +111,7 @@ const Footer = () => {
                   Team
                 </button>
               </li>
-              <li>
-                <Link to="/dashboard" className="hover:text-eco-400 transition">
-                  Dashboard
-                </Link>
-              </li>
+    
             </ul>
           </div>
 
