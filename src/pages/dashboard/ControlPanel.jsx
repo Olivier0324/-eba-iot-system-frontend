@@ -22,6 +22,7 @@ import {
   useGetIntervalPresetsQuery,
 } from "../../services/api";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useSafePolling, POLL_INTERVAL_NEVER } from "../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 
 function ControlPanel() {
@@ -31,14 +32,19 @@ function ControlPanel() {
   const {
     data: deviceStatusData,
     isLoading: statusLoading,
+    isFetching: statusFetching,
     refetch,
     error: statusError,
   } = useGetDeviceStatusQuery(undefined, { skip: !canControl });
+  useSafePolling(refetch, statusFetching);
   const {
     data: presetsData,
     isLoading: presetsLoading,
+    isFetching: presetsFetching,
+    refetch: refetchPresets,
     error: presetsError,
   } = useGetIntervalPresetsQuery(undefined, { skip: !canControl });
+  useSafePolling(refetchPresets, presetsFetching, POLL_INTERVAL_NEVER);
 
   if (!canControl) {
     return <Navigate to="/dashboard" replace />;

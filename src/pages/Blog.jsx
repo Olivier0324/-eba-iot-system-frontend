@@ -5,6 +5,7 @@ import Footer from "../components/common/Footer";
 import Logo from "../components/common/Logo";
 import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { useGetAllBlogsQuery } from "../services/api";
+import { useSafePolling, POLL_INTERVAL_NEVER } from "../hooks/useSafePolling";
 import { format } from "date-fns";
 
 const Blog = () => {
@@ -15,12 +16,14 @@ const Blog = () => {
   const {
     data: blogsResponse,
     isLoading,
+    isFetching: blogsFetching,
     error,
     refetch,
   } = useGetAllBlogsQuery({
     page: 1,
     limit: 100,
   });
+  useSafePolling(refetch, blogsFetching, POLL_INTERVAL_NEVER);
 
   // Extract blogs from response - handle different possible structures
   let allBlogs = [];

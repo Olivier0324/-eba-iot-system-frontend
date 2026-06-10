@@ -25,6 +25,7 @@ import {
   useGetAlertStatisticsQuery,
   useGetActiveAlertsQuery,
 } from "../../services/api";
+import { useSafePolling, POLL_INTERVAL_SLOW_MS } from "../../hooks/useSafePolling";
 import { format, subDays } from "date-fns";
 import Pagination from "../../components/common/Pagination";
 import FilterPills from "../../components/common/FilterPills";
@@ -56,12 +57,27 @@ function Analytics() {
   const [endDate, setEndDate] = useState(null);
   const itemsPerPage = 10;
 
-  const { data: sensorData, isLoading: sensorLoading } =
-    useGetAllSensorDataQuery();
-  const { data: alertStats } = useGetAlertStatisticsQuery({
+  const {
+    data: sensorData,
+    isLoading: sensorLoading,
+    isFetching: sensorFetching,
+    refetch: refetchSensor,
+  } = useGetAllSensorDataQuery();
+  const {
+    data: alertStats,
+    isFetching: alertStatsFetching,
+    refetch: refetchAlertStats,
+  } = useGetAlertStatisticsQuery({
     days: period === "7d" ? 7 : period === "30d" ? 30 : 90,
   });
-  const { data: activeAlertsData } = useGetActiveAlertsQuery();
+  useSafePolling(refetchAlertStats, alertStatsFetching, POLL_INTERVAL_SLOW_MS);
+  const {
+    data: activeAlertsData,
+    isFetching: activeAlertsFetching,
+    refetch: refetchActiveAlerts,
+  } = useGetActiveAlertsQuery();
+  useSafePolling(refetchSensor, sensorFetching);
+  useSafePolling(refetchActiveAlerts, activeAlertsFetching);
 
   const [chartData1, setChartData1] = useState({ labels: [], datasets: [] });
   const [chartData2, setChartData2] = useState({ labels: [], datasets: [] });

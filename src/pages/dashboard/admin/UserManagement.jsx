@@ -9,6 +9,7 @@ import {
   useChangeUserRoleMutation,
   useGetUserStatsQuery,
 } from "../../../services/api";
+import { useSafePolling, POLL_INTERVAL_SLOW_MS } from "../../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 import {
   Plus,
@@ -111,7 +112,13 @@ const UserManagement = () => {
     error: usersError,
   } = useGetAllUsersQuery(queryParams);
 
-  const { data: statsData, refetch: refetchStats } = useGetUserStatsQuery();
+  const {
+    data: statsData,
+    isFetching: statsFetching,
+    refetch: refetchStats,
+  } = useGetUserStatsQuery();
+  useSafePolling(refetch, isFetching, POLL_INTERVAL_SLOW_MS);
+  useSafePolling(refetchStats, statsFetching, POLL_INTERVAL_SLOW_MS);
 
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();

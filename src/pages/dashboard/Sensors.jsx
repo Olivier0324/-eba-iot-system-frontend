@@ -26,6 +26,7 @@ import {
   useGetAllSensorDataQuery,
   useLazyGetAllSensorDataQuery,
 } from "../../services/api";
+import { useSafePolling } from "../../hooks/useSafePolling";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
 import FilterPills from "../../components/common/FilterPills";
@@ -72,7 +73,13 @@ ChartJS.register(
 
 function Sensors() {
   const [selectedMetric, setSelectedMetric] = useState("all");
-  const { data: sensorData, isLoading, refetch } = useGetAllSensorDataQuery();
+  const {
+    data: sensorData,
+    isLoading,
+    isFetching: sensorFetching,
+    refetch,
+  } = useGetAllSensorDataQuery();
+  useSafePolling(refetch, sensorFetching);
   const [fetchSensorExport] = useLazyGetAllSensorDataQuery();
   const [sensorReadings, setSensorReadings] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
