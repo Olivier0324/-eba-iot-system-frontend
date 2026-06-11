@@ -111,7 +111,6 @@ const Footer = () => {
                   Team
                 </button>
               </li>
-    
             </ul>
           </div>
 

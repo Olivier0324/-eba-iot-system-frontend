@@ -554,11 +554,7 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
-<<<<<<< HEAD
-                  To  prototype a web-based application
-=======
                   To prototype a web-based application
->>>>>>> feat-safe-polling
                     dashboard for the visualization of real-time and historical
                     environmental data to support decision-making.
                   </span>
