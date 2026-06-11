@@ -10,6 +10,7 @@ import {
   useGetNotificationPreferencesQuery,
   useUpdateNotificationPreferencesMutation,
 } from "../../services/api";
+import { useSafePolling, POLL_INTERVAL_NEVER } from "../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 import { setUser } from "../../services/reducers/authReducer";
 import ThemeModeSelector from "../../components/common/ThemeModeSelector";
@@ -38,8 +39,13 @@ function Settings() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const { data: notifPrefs, isLoading: prefsLoading } =
-    useGetNotificationPreferencesQuery(undefined, { skip: !user });
+  const {
+    data: notifPrefs,
+    isLoading: prefsLoading,
+    isFetching: prefsFetching,
+    refetch: refetchPrefs,
+  } = useGetNotificationPreferencesQuery(undefined, { skip: !user });
+  useSafePolling(refetchPrefs, prefsFetching, POLL_INTERVAL_NEVER);
   const [updateNotifPrefs, { isLoading: prefsSaving }] =
     useUpdateNotificationPreferencesMutation();
 

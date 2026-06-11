@@ -17,6 +17,7 @@ import {
   useResolveAlertMutation,
   useAcknowledgeAlertMutation,
 } from "../../services/api";
+import { useSafePolling, POLL_INTERVAL_SLOW_MS } from "../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 import Pagination from "../../components/common/Pagination";
 import FilterPills from "../../components/common/FilterPills";
@@ -102,6 +103,7 @@ function Alerts() {
   const {
     data: alertsData,
     isLoading,
+    isFetching: alertsFetching,
     refetch,
   } = useGetAlertsQuery(
     { status: filter !== "all" ? filter : undefined },
@@ -112,18 +114,17 @@ function Alerts() {
       refetchOnReconnect: true,
     },
   );
+  useSafePolling(refetch, alertsFetching);
   const [resolveAlert, { isLoading: isResolving }] = useResolveAlertMutation();
   const [acknowledgeAlert, { isLoading: isAcknowledging }] =
     useAcknowledgeAlertMutation();
-  const { data: alertByIdData, isLoading: isSingleLoading } = useGetAlertByIdQuery(
-    id,
-    {
-      skip: !id,
-      pollingInterval: 20000,
-      refetchOnFocus: true,
-      refetchOnReconnect: true,
-    },
-  );
+  const {
+    data: alertByIdData,
+    isLoading: isSingleLoading,
+    isFetching: alertByIdFetching,
+    refetch: refetchAlertById,
+  } = useGetAlertByIdQuery(id, { skip: !id });
+  useSafePolling(refetchAlertById, alertByIdFetching, POLL_INTERVAL_SLOW_MS);
 
   const baseAlerts = isSingleView
     ? [alertByIdData].filter(Boolean)
@@ -306,13 +307,15 @@ function Alerts() {
                 <div className="relative pl-4 sm:pl-5 pr-4 sm:pr-5 py-4 sm:py-5">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex gap-3 sm:gap-4 min-w-0">
-                      <div
-                        className={`shrink-0 p-2.5 rounded-xl ${styles.iconBg}`}
-                      >
-                        <IconComponent
-                          className={`h-5 w-5 ${styles.iconText}`}
-                          aria-hidden
-                        />
+                      <div>
+                        <div
+                          className={`shrink-0 p-2.5 rounded-xl ${styles.iconBg}`}
+                        >
+                          <IconComponent
+                            className={`h-5 w-5 ${styles.iconText}`}
+                            aria-hidden
+                          />
+                        </div>
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2 gap-y-1">

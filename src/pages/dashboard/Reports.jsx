@@ -6,6 +6,7 @@ import {
   useGetReportsQuery,
   useDeleteReportMutation,
 } from "../../services/api";
+import { useSafePolling, POLL_INTERVAL_SLOW_MS } from "../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
 import Pagination from "../../components/common/Pagination";
@@ -26,7 +27,13 @@ function Reports() {
   const [generateReport, { isLoading: isGenerating }] =
     useGenerateReportMutation();
   const [deleteReport, { isLoading: isDeleting }] = useDeleteReportMutation();
-  const { data: reports, isLoading, refetch } = useGetReportsQuery();
+  const {
+    data: reports,
+    isLoading,
+    isFetching: reportsFetching,
+    refetch,
+  } = useGetReportsQuery();
+  useSafePolling(refetch, reportsFetching, POLL_INTERVAL_SLOW_MS);
 
   const handleGenerate = async () => {
     try {

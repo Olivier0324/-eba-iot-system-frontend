@@ -30,6 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { useGetLatestDataQuery } from "../services/api";
+import { useSafePolling } from "../hooks/useSafePolling";
 
 // Testimonial Data
 const testimonials = [
@@ -100,7 +101,13 @@ const calculateAverage = (data, key) => {
 
 const LandingPage = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const { data: latestData, isLoading, refetch } = useGetLatestDataQuery();
+  const {
+    data: latestData,
+    isLoading,
+    isFetching: latestFetching,
+    refetch,
+  } = useGetLatestDataQuery();
+  useSafePolling(refetch, latestFetching);
   const [liveData, setLiveData] = useState({
     temperature: "--",
     humidity: "--",
@@ -168,14 +175,6 @@ const LandingPage = () => {
     }
   }, [latestData]);
 
-  // Auto-refresh every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 60000); // Refresh every 60 seconds
-
-    return () => clearInterval(interval);
-  }, [refetch]);
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
@@ -555,7 +554,11 @@ const LandingPage = () => {
                     className="text-eco-600 mt-0.5 shrink-0"
                   />
                   <span>
+<<<<<<< HEAD
                   To  prototype a web-based application
+=======
+                  To prototype a web-based application
+>>>>>>> feat-safe-polling
                     dashboard for the visualization of real-time and historical
                     environmental data to support decision-making.
                   </span>

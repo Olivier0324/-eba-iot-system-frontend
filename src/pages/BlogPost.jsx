@@ -6,13 +6,20 @@ import Logo from "../components/common/Logo";
 import ThemeToggleButton from "../components/common/ThemeToggleButton";
 import { Calendar, User, ArrowLeft, Clock, Tag } from "lucide-react";
 import { useGetBlogBySlugQuery } from "../services/api";
+import { useSafePolling, POLL_INTERVAL_NEVER } from "../hooks/useSafePolling";
 import { format } from "date-fns";
 
 const BlogPost = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const { data: blogResponse, isLoading, error } = useGetBlogBySlugQuery(slug);
+  const {
+    data: blogResponse,
+    isLoading,
+    isFetching: blogFetching,
+    refetch: refetchBlog,
+  } = useGetBlogBySlugQuery(slug);
+  useSafePolling(refetchBlog, blogFetching, POLL_INTERVAL_NEVER);
 
   // Extract blog from response
   const post = blogResponse?.data || blogResponse;

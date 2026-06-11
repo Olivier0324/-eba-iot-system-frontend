@@ -17,6 +17,7 @@ import {
   useDeleteNotificationMutation,
 } from "../../services/api";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useSafePolling } from "../../hooks/useSafePolling";
 import { getFetchErrorMessage } from "../../utils/rtkQueryError";
 import { toast } from "react-toastify";
 
@@ -61,6 +62,8 @@ function Notifications() {
         "The server could not load notifications (HTTP 500).",
       )
     : "";
+  useSafePolling(refetch, isFetching);
+
   const [markRead, { isLoading: markingOne }] =
     useMarkNotificationAsReadMutation();
   const [markAll, { isLoading: markingAll }] =

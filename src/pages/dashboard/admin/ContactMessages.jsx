@@ -1,5 +1,5 @@
 // src/pages/dashboard/admin/ContactMessages.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
@@ -80,6 +80,18 @@ const ContactMessages = () => {
   useEffect(() => {
     fetchMessages();
     fetchStats();
+  }, [currentPage]);
+
+  const isLoadingRef = useRef(isLoading);
+  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!isLoadingRef.current) {
+        fetchMessages();
+        fetchStats();
+      }
+    }, 120_000);
+    return () => clearInterval(id);
   }, [currentPage]);
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);

@@ -13,6 +13,7 @@ import {
 import { toast } from "react-toastify";
 import { connectSocket, disconnectSocket } from "../services/socket";
 import { usePermissions } from "../hooks/usePermissions";
+import { useSafePolling } from "../hooks/useSafePolling";
 import {
   LayoutDashboard,
   Menu,
@@ -59,8 +60,7 @@ function apiNotificationRecordId(n) {
 
 /** `Boolean("false")` is true in JS — treat read flags literally. */
 function notificationIsRead(n) {
-  const v =
-    n.isRead !== undefined && n.isRead !== null ? n.isRead : n.read;
+  const v = n.isRead !== undefined && n.isRead !== null ? n.isRead : n.read;
   if (v === true || v === 1) return true;
   if (typeof v === "string") {
     const s = v.toLowerCase();
@@ -105,7 +105,7 @@ function Dashboard() {
     });
   };
   const [showNotifications, setShowNotifications] = useState(false);
-  const [latestSensorData, setLatestSensorData] = useState(null);
+  const [socketSensorData, setSocketSensorData] = useState(null);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,14 +115,15 @@ function Dashboard() {
   const [userLogout, { isLoading }] = useLogoutMutation();
   const { canControl, canAccessReportsAlertsNotifications } = usePermissions();
 
-  const { data: notifPayload, refetch: refetchNotifications } =
-    useGetNotificationsQuery(
-      { page: 1, limit: DROPDOWN_UNREAD_LIMIT, isRead: false },
-      {
-        skip: !token || !canAccessReportsAlertsNotifications,
-        pollingInterval: 60_000,
-      },
-    );
+  const {
+    data: notifPayload,
+    refetch: refetchNotifications,
+    isFetching: notifFetching,
+  } = useGetNotificationsQuery(
+    { page: 1, limit: DROPDOWN_UNREAD_LIMIT, isRead: false },
+    { skip: !token || !canAccessReportsAlertsNotifications },
+  );
+  useSafePolling(refetchNotifications, notifFetching);
   const [markNotificationReadApi] = useMarkNotificationAsReadMutation();
   const [markAllNotificationsReadApi] = useMarkAllNotificationsAsReadMutation();
 
@@ -142,15 +143,23 @@ function Dashboard() {
       ? notifPayload.unreadCount
       : dropdownNotifications.length;
 
-  // Fetch latest sensor data
-  const { data: sensorData } = useGetAllSensorDataQuery();
+  const {
+    data: sensorData,
+    isFetching: sensorDataFetching,
+    refetch: refetchSensorData,
+  } = useGetAllSensorDataQuery();
+  useSafePolling(refetchSensorData, sensorDataFetching);
 
-  // Update latest sensor data when fetched
-  useEffect(() => {
-    if (sensorData && Array.isArray(sensorData) && sensorData.length > 0) {
-      setLatestSensorData(sensorData[0]);
-    }
-  }, [sensorData]);
+  // Socket data takes priority; fall back to latest from API polling
+  const latestSensorData = useMemo(
+    () =>
+      socketSensorData ??
+      (Array.isArray(sensorData) && sensorData.length > 0
+        ? sensorData[0]
+        : null),
+    [socketSensorData, sensorData],
+  );
+  console.log("🚀 ~ Dashboard ~ latestSensorData:", latestSensorData);
 
   // Connect to Socket.io on mount (skipped when VITE_ENABLE_SOCKET=0 — see src/services/socket.js)
   useEffect(() => {
@@ -166,8 +175,7 @@ function Dashboard() {
         }
 
         socket.on("sensor-data", (data) => {
-          setLatestSensorData(data);
-
+          setSocketSensorData(data);
           if (data.temperature > 35 || data.co2_ppm > 1000) {
             toast.warning(
               `${data.temperature > 35 ? `Temperature at ${data.temperature}°C` : ""} ${data.co2_ppm > 1000 ? `CO\u2082 at ${data.co2_ppm} ppm` : ""}`.trim(),
@@ -198,10 +206,6 @@ function Dashboard() {
     refetchNotifications,
     canAccessReportsAlertsNotifications,
   ]);
-
-  useEffect(() => {
-    setMobileSidebarOpen(false);
-  }, [location]);
 
   const handleLogout = async () => {
     try {
@@ -264,9 +268,7 @@ function Dashboard() {
             icon: Inbox,
           },
         ]
-      : [
-          { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
-        ];
+      : [{ name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 }];
     const control = canControl
       ? [
           {
@@ -276,7 +278,9 @@ function Dashboard() {
           },
         ]
       : [];
-    const tail = [{ name: "Settings", path: "/dashboard/settings", icon: Settings }];
+    const tail = [
+      { name: "Settings", path: "/dashboard/settings", icon: Settings },
+    ];
     return [...core, ...staffInsights, ...control, ...tail];
   }, [canControl, canAccessReportsAlertsNotifications]);
 
@@ -445,7 +449,9 @@ function Dashboard() {
               <div className="h-12 w-12 shrink-0 rounded-full bg-linear-to-br from-eco-500 to-ocean-500 flex items-center justify-center text-white">
                 <User size={20} />
               </div>
-              <div className={`ml-3 min-w-0 ${sidebarCollapsed ? "md:hidden" : ""}`}>
+              <div
+                className={`ml-3 min-w-0 ${sidebarCollapsed ? "md:hidden" : ""}`}
+              >
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {user?.username || "User"}
                 </p>
@@ -460,7 +466,9 @@ function Dashboard() {
           </div>
 
           {/* Navigation */}
-          <nav className={`flex-1 overflow-y-auto min-h-0 ${sidebarCollapsed ? "md:p-2" : "p-4"}`}>
+          <nav
+            className={`flex-1 overflow-y-auto min-h-0 ${sidebarCollapsed ? "md:p-2" : "p-4"}`}
+          >
             <ul className="space-y-1">
               {navItems.map((item) => (
                 <li key={item.path}>
@@ -560,7 +568,9 @@ function Dashboard() {
                               size={16}
                               className={`shrink-0 ${sidebarCollapsed ? "mr-2" : "mr-3"}`}
                             />
-                            <span className="text-sm truncate">{item.name}</span>
+                            <span className="text-sm truncate">
+                              {item.name}
+                            </span>
                           </Link>
                         </li>
                       ))}
@@ -618,7 +628,9 @@ function Dashboard() {
                     size={20}
                     className={`shrink-0 group-hover:text-red-500 transition-colors ${sidebarCollapsed ? "md:mr-0" : "mr-3"}`}
                   />
-                  <span className={sidebarCollapsed ? "md:hidden" : ""}>Logout</span>
+                  <span className={sidebarCollapsed ? "md:hidden" : ""}>
+                    Logout
+                  </span>
                 </>
               )}
             </button>
@@ -659,81 +671,81 @@ function Dashboard() {
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Notifications (managers + admins only) */}
             {canAccessReportsAlertsNotifications && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-alert-500 text-white text-xs flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-alert-500 text-white text-xs flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
 
-              {/* Notifications Dropdown */}
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 z-50 overflow-hidden flex flex-col max-h-[min(24rem,70vh)]">
-                  <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center gap-2 shrink-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      Notifications
-                    </h3>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Link
-                        to="/dashboard/notifications"
-                        onClick={() => setShowNotifications(false)}
-                        className="text-xs font-medium text-ocean-600 dark:text-ocean-400 hover:underline"
-                      >
-                        View all
-                      </Link>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void markAllAsRead()}
-                          className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] rounded-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-xl ring-1 ring-gray-200/70 dark:ring-gray-600/50 z-50 overflow-hidden flex flex-col max-h-[min(24rem,70vh)]">
+                    <div className="p-3 border-b border-gray-100/90 dark:border-gray-700/80 flex justify-between items-center gap-2 shrink-0">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        Notifications
+                      </h3>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          to="/dashboard/notifications"
+                          onClick={() => setShowNotifications(false)}
+                          className="text-xs font-medium text-ocean-600 dark:text-ocean-400 hover:underline"
                         >
-                          Mark all as read
-                        </button>
+                          View all
+                        </Link>
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => void markAllAsRead()}
+                            className="text-xs font-medium text-eco-600 dark:text-eco-400 hover:text-eco-700 dark:hover:text-eco-300"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto flex-1 min-h-0">
+                      {dropdownNotifications.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                          No unread notifications
+                        </div>
+                      ) : (
+                        dropdownNotifications.map((notif) => (
+                          <button
+                            type="button"
+                            key={notif.id}
+                            onClick={() => void markNotificationAsRead(notif)}
+                            className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
+                              !notif.read
+                                ? "bg-eco-50/80 dark:bg-eco-950/25"
+                                : ""
+                            }`}
+                          >
+                            <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                              {notif.title}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">
+                              {notif.message}
+                            </p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                              {notif.timestamp instanceof Date
+                                ? notif.timestamp.toLocaleString()
+                                : new Date(notif.timestamp).toLocaleString()}
+                            </p>
+                          </button>
+                        ))
                       )}
                     </div>
                   </div>
-                  <div className="overflow-y-auto flex-1 min-h-0">
-                    {dropdownNotifications.length === 0 ? (
-                      <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No unread notifications
-                      </div>
-                    ) : (
-                      dropdownNotifications.map((notif) => (
-                        <button
-                          type="button"
-                          key={notif.id}
-                          onClick={() => void markNotificationAsRead(notif)}
-                          className={`w-full text-left p-3 border-b border-gray-100/80 dark:border-gray-800/80 last:border-0 hover:bg-gray-50/90 dark:hover:bg-gray-800/80 transition-colors ${
-                            !notif.read
-                              ? "bg-eco-50/80 dark:bg-eco-950/25"
-                              : ""
-                          }`}
-                        >
-                          <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
-                            {notif.title}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            {notif.timestamp instanceof Date
-                              ? notif.timestamp.toLocaleString()
-                              : new Date(notif.timestamp).toLocaleString()}
-                          </p>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
             )}
           </div>
         </header>

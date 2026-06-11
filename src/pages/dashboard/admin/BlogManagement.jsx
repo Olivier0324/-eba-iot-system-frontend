@@ -7,6 +7,7 @@ import {
   useUpdateBlogMutation,
   useDeleteBlogMutation,
 } from "../../../services/api";
+import { useSafePolling, POLL_INTERVAL_NEVER } from "../../../hooks/useSafePolling";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
 import {
@@ -104,12 +105,14 @@ const BlogManagement = () => {
   const {
     data: blogsResponse,
     isLoading,
+    isFetching: blogsFetching,
     refetch,
     error,
   } = useGetAllBlogsQuery({
     page: currentPage + 1,
     limit: itemsPerPage,
   });
+  useSafePolling(refetch, blogsFetching, POLL_INTERVAL_NEVER);
 
   const [createBlog] = useCreateBlogMutation();
   const [updateBlog] = useUpdateBlogMutation();

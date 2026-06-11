@@ -23,6 +23,7 @@ import {
   Waves,
 } from "lucide-react";
 import { useGetAllSensorDataQuery } from "../../services/api";
+import { useSafePolling } from "../../hooks/useSafePolling";
 import Pagination from "../../components/common/Pagination";
 import DateRangeFilterBar from "../../components/common/DateRangeFilterBar";
 
@@ -41,12 +42,13 @@ ChartJS.register(
 );
 
 function Overview() {
-  const { data: sensorData, isLoading: sensorLoading } =
-    useGetAllSensorDataQuery(undefined, {
-      pollingInterval: 30000,
-      refetchOnFocus: true,
-      refetchOnReconnect: true,
-    });
+  const {
+    data: sensorData,
+    isLoading: sensorLoading,
+    isFetching: sensorFetching,
+    refetch: refetchSensor,
+  } = useGetAllSensorDataQuery();
+  useSafePolling(refetchSensor, sensorFetching);
   const [recentReadings, setRecentReadings] = useState([]);
   const [latestReading, setLatestReading] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
